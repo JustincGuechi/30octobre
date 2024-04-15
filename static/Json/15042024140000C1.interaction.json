@@ -1,0 +1,74 @@
+{
+    "data": [
+        {
+            "ID": "1",
+            "Interaction": "Velo - Voiture",
+            "User": [
+                {"ID_usager":"1"},
+                {"ID_usager":"2"}
+            ],
+            "Commentaire": "undefined",
+            "Validé": "Non"
+        },
+        {
+            "ID": "2",
+            "Interaction": "Velo - Pieton",
+            "User": [
+                {"ID_usager":"1"},
+                {"ID_usager":"4"}
+            ],
+            "Commentaire": "undefined",
+            "Validé": "Non"
+        },
+        {
+            "ID": "3",
+            "Interaction": "Pieton - Voiture",
+            "User": [
+                {"ID_usager":"4"},
+                {"ID_usager":"2"}
+            ],
+            "Commentaire": "Danger",
+            "Validé": "Oui"
+        },
+        {
+            "ID": "4",
+            "Interaction": "Voiture - Voiture",
+            "User": [
+                {"ID_usager":"2"},
+                {"ID_usager":"8"}
+            ],
+            "Commentaire": "Normal",
+            "Validé": "Non"
+        },
+        {
+            "ID": "5",
+            "Interaction": "Voiture - Trotinette ",
+            "User": [
+                {"ID_usager":"2"},
+                {"ID_usager":"3"}
+            ],
+            "Commentaire": "Accident",
+            "Validé": "Oui"
+        },
+        {
+            "ID": "6",
+            "Interaction": "Velo - Voiture",
+            "User": [
+                {"ID_usager":"1"},
+                {"ID_usager":"8"}
+            ],
+            "Commentaire": "Danger",
+            "Validé": "Oui"
+        },
+        {
+            "ID": "7",
+            "Interaction": "Velo - Pieton",
+            "User": [
+                {"ID_usager":"1"},
+                {"ID_usager":"4"}
+            ],
+            "Commentaire": "Normal",
+            "Validé": "Non"
+        }
+    ]
+}
