@@ -4,6 +4,9 @@ __pycache__/
 *$py.class
 *.json
 *.pt
+*.mp4
+*.webm
+
 # C extensions
 *.so
 
