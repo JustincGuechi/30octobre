@@ -72,72 +72,85 @@ def main():
         data = json.load(f)
 
     # Extract the coordinates for the first car
-    car_data = next(item for item in data if item["Usager"] == "person" and item["ID"] == 89)
-    car_coordinates = [(item["x"], item["y"], item["h"], item["w"]) for item in car_data["data"]]
+    # Create a new JSON object with lat and lon for each element in data
+    new_data = []
+    for item in data:
+        print(item["ID"])
+        car_data = item["data"]
+        if car_data:
+            car_coordinates = [(x["x"], x["y"], x["h"], x["w"]) for x in car_data]
+            car_points = np.array(car_coordinates, dtype=np.float32)
+            car_points[:, 1] = car_points[:, 1] + car_points[:, 2] / 2
+            car_geo_coordinates = []
+            for p in car_points:
+                u = p[0]
+                v = p[1]
+                lat, lon = calculate_geographic_coordinates(u, v, triangles, geo_triangles)
+                car_geo_coordinates.append((lat, lon))
+            new_car_data = []
+            for x, (lat, lon) in zip(car_data, car_geo_coordinates):
+                new_item = {
+                    "frame_id": x["frame_id"],
+                    "time": x["time"],
+                    "lat": lat,
+                    "lon": lon
+                }
+                new_car_data.append(new_item)
+            item["data"] = new_car_data
+        new_data.append(item)
 
-    # Convert the car coordinates to numpy array
-    car_points = np.array(car_coordinates, dtype=np.float32)
+    # Save the updated JSON object to a file
+    with open('updated_annotated.json', 'w') as f:
+        json.dump(new_data, f, indent=4)
+    # # fait le trajet de la voiture sur une carte
+    # map = folium.Map(location=car_geo_coordinates[0], zoom_start=15)
+    # folium.PolyLine(locations=car_geo_coordinates, color='red').add_to(map)
+    # folium.Marker(car_geo_coordinates[0], popup='Start').add_to(map)
+    # folium.Marker(car_geo_coordinates[-1], popup='End').add_to(map)
+    # for geo_t in geo_triangles:
+    #     folium.Polygon(geo_t, color='green', fill=True, fill_color='green').add_to(map)
+    # map.save('map.html')
+    # cap = cv2.VideoCapture('static\\video\\Alyce_ICT-1287_2024-02-16_165010_194.mp4')
 
-    # edit car_points doit être en bas au millieu de la boite
-    car_points[:, 1] = car_points[:, 1] + car_points[:, 2] / 2
+    # # Check if the video file was opened successfully
+    # if not cap.isOpened():
+    #     print("Error opening video file")
+    #     exit()
 
-    # Calculate the geographic coordinates for each car point
-    car_geo_coordinates = []
-    for p in car_points:
-        u = p[0]
-        v = p[1]
-        lat, lon = calculate_geographic_coordinates(u, v, triangles, geo_triangles)
-        car_geo_coordinates.append((lat, lon))
+    # # Read the first frame of the video
+    # ret, frame = cap.read()
 
-    # fait le trajet de la voiture sur une carte
-    map = folium.Map(location=car_geo_coordinates[0], zoom_start=15)
-    folium.PolyLine(locations=car_geo_coordinates, color='red').add_to(map)
-    folium.Marker(car_geo_coordinates[0], popup='Start').add_to(map)
-    folium.Marker(car_geo_coordinates[-1], popup='End').add_to(map)
-    for geo_t in geo_triangles:
-        folium.Polygon(geo_t, color='green', fill=True, fill_color='green').add_to(map)
-    map.save('map.html')
-    cap = cv2.VideoCapture('static\\video\\Alyce_ICT-1287_2024-02-16_165010_194.mp4')
+    # # Check if the frame was read successfully
+    # if not ret:
+    #     print("Error reading video frame")
+    #     exit()
 
-    # Check if the video file was opened successfully
-    if not cap.isOpened():
-        print("Error opening video file")
-        exit()
+    # # # Afficher le point uv
+    # # cv2.circle(frame, (u, v), 5, (0, 0, 255), -1)
 
-    # Read the first frame of the video
-    ret, frame = cap.read()
+    # # afficher les triangles de Delaunay
+    # for t in triangles:
+    #     t = t.astype(int)
+    #     cv2.polylines(frame, [t], True, (0, 255, 0), 2)
 
-    # Check if the frame was read successfully
-    if not ret:
-        print("Error reading video frame")
-        exit()
+    # # # afficher les coordonnées des pixels de tous les triangles
+    # # for i in range(len(image_points)):
+    # #     cv2.putText(frame, str(image_points[i]), (int(image_points[i][0]), int(image_points[i][1])), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
+    # # affiche tous les triangles selectionner par calculat_geographic_coordinates
 
-    # # Afficher le point uv
-    # cv2.circle(frame, (u, v), 5, (0, 0, 255), -1)
-
-    # afficher les triangles de Delaunay
-    for t in triangles:
-        t = t.astype(int)
-        cv2.polylines(frame, [t], True, (0, 255, 0), 2)
-
-    # # afficher les coordonnées des pixels de tous les triangles
-    # for i in range(len(image_points)):
-    #     cv2.putText(frame, str(image_points[i]), (int(image_points[i][0]), int(image_points[i][1])), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
-    # affiche tous les triangles selectionner par calculat_geographic_coordinates
-
-    # affiche les déplacement de la voiture en pixel
-    for i in range(len(car_points) - 1):
-        cv2.arrowedLine(frame, (int(car_points[i][0]), int(car_points[i][1])), (int(car_points[i+1][0]), int(car_points[i+1][1])), (0, 0, 255), 2)
+    # # affiche les déplacement de la voiture en pixel
+    # for i in range(len(car_points) - 1):
+    #     cv2.arrowedLine(frame, (int(car_points[i][0]), int(car_points[i][1])), (int(car_points[i+1][0]), int(car_points[i+1][1])), (0, 0, 255), 2)
 
 
 
-    # Display the frame with triangles
-    cv2.imshow('Video with Triangles', frame)
-    cv2.waitKey(0)
+    # # Display the frame with triangles
+    # cv2.imshow('Video with Triangles', frame)
+    # cv2.waitKey(0)
 
-    # Release the video file and close the window
-    cap.release()
-    cv2.destroyAllWindows()
+    # # Release the video file and close the window
+    # cap.release()
+    # cv2.destroyAllWindows()
 
 if __name__ == "__main__":
     main()
