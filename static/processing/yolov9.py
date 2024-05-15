@@ -118,11 +118,12 @@ def save_track_data_to_json(track_history_with_label,output_video_path):
         track_dict.append(track_info)
  
     # Enregistrement des données au format JSON dans le fichier
-    with open(output_video_path + ".json", "w") as fichier_json:
+    link = output_video_path.split(".")[0]
+    with open( link + ".json", "w") as fichier_json:
         json.dump(track_dict, fichier_json, indent=2)
  
     # Enregistrement des données au format JSON dans le fichier
-    with open(output_video_path +"_light.json", "w") as fichier_json:
+    with open(link +"_light.json", "w") as fichier_json:
         json.dump(track_dict_light, fichier_json, indent=2)
  
  

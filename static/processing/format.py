@@ -48,15 +48,34 @@ def calculate_geographic_coordinates(u, v, triangles, geo_triangles):
 
 
 def main():
-    # Coordonnées des points sur l'image (pixels)
-    image_points = np.array([[495, 217], [667, 194], [309, 234], [248, 492], [776, 298], [690, 254], [763, 213], [115, 217], [3, 284], [0, 504], [261, 173], [361, 177], [564, 568], [142, 340], [561, 324],[ 568, 220], [327, 373], [675, 289], [767, 262]], dtype=np.float32)
-
+    link = 'static/video/C1_Thiers/json/annotated_Alyce_ICT-1287_2024-02-16_165010_194.webm.json'
+    with open(link) as f:
+        data = json.load(f)
+    
+    # Coordonnées de Carnot (verification du folder C7_Carnot)
+    if 'C1_Thiers' in link:
+        # Coordonnées des points sur l'image (pixels)
+        image_points = np.array([[756, 538],[319, 597],[716, 418],[317, 442], [538, 330], [452, 313],[434, 338],[344, 311],[244, 326],[188, 332],[114, 343],[15, 399]], dtype=np.float32)
+        geographic_coords = [(47.321974, 5.051581),(47.322062, 5.051542),(47.321946, 5.051642),(47.322039, 5.051642),(47.321968, 5.051779), (47.322000, 5.051837),(47.322012, 5.051763),(47.322062, 5.051870),(47.322108, 5.051819),(47.322133, 5.051782),(47.322163, 5.051751),(47.322147, 5.051638)]
+    if 'C2_Gray' in link:
+        pass
+    if 'C3_AVIA' in link:
+        pass
+    if 'C4_Strasbourg' in link:
+        pass
+    if 'C5_Boulangerie' in link:
+        pass
+    if 'C6_Carnot' in link:
+        pass
+    if 'C7_Carnot' in link:
+        # Coordonnées des points sur l'image (pixels)
+        image_points = np.array([[495, 217], [667, 194], [309, 234], [248, 492], [776, 298], [690, 254], [763, 213], [115, 217], [3, 284], [0, 504], [261, 173], [361, 177], [564, 568], [142, 340], [561, 324],[ 568, 220], [327, 373], [675, 289], [767, 262]], dtype=np.float32)
+        geographic_coords = [(47.321361, 5.051694), (47.321222, 5.051583), (47.321417, 5.051750), (47.321500, 5.051639), (47.321361, 5.051528), (47.321361, 5.051583), (47.321125, 5.051428), (47.321447, 5.052046), (47.321563, 5.051865),(47.321529, 5.051678), (47.321286, 5.052094), (47.321300, 5.051900), (47.321475, 5.051601), (47.321483, 5.051722), (47.321429, 5.051628),(47.321346, 5.051657), (47.321464, 5.051666),(47.321390, 5.051593),(47.321318, 5.051514)]
 
     # donne la liste des triangles de Delaunay
     tri = Delaunay(image_points).simplices
     triangles = image_points[tri]
 
-    geographic_coords = [(47.321361, 5.051694), (47.321222, 5.051583), (47.321417, 5.051750), (47.321500, 5.051639), (47.321361, 5.051528), (47.321361, 5.051583), (47.321125, 5.051428), (47.321447, 5.052046), (47.321563, 5.051865),(47.321529, 5.051678), (47.321286, 5.052094), (47.321300, 5.051900), (47.321475, 5.051601), (47.321483, 5.051722), (47.321429, 5.051628),(47.321346, 5.051657), (47.321464, 5.051666),(47.321390, 5.051593),(47.321318, 5.051514)]
 
     # faire que les triangles correspondent aux coordonnées géographiques
     geo_triangles = []
@@ -68,8 +87,6 @@ def main():
 
     # Load the JSON file
 
-    with open('./static/video/json/annotated_Alyce_ICT-1287_2024-02-16_165010_194.webm.json') as f:
-        data = json.load(f)
 
     # Extract the coordinates for the first car
     # Create a new JSON object with lat and lon for each element in data
@@ -100,43 +117,42 @@ def main():
         new_data.append(item)
 
     # Save the updated JSON object to a file
-    with open('updated_annotated.json', 'w') as f:
+    link = link.replace('.json', '_geo.json')
+    print(link)
+    with open(link, 'w') as f:
         json.dump(new_data, f, indent=4)
     # # fait le trajet de la voiture sur une carte
-    # map = folium.Map(location=car_geo_coordinates[0], zoom_start=15)
-    # folium.PolyLine(locations=car_geo_coordinates, color='red').add_to(map)
-    # folium.Marker(car_geo_coordinates[0], popup='Start').add_to(map)
-    # folium.Marker(car_geo_coordinates[-1], popup='End').add_to(map)
-    # for geo_t in geo_triangles:
-    #     folium.Polygon(geo_t, color='green', fill=True, fill_color='green').add_to(map)
-    # map.save('map.html')
-    # cap = cv2.VideoCapture('static\\video\\Alyce_ICT-1287_2024-02-16_165010_194.mp4')
+    map = folium.Map(location=car_geo_coordinates[0], zoom_start=15)
+    for geo_t in geo_triangles:
+        folium.Polygon(geo_t, color='green', fill=True, fill_color='green').add_to(map)
+    map.save('map.html')
+    cap = cv2.VideoCapture('static\\video\\C1_Thiers\\C1_Thiers_2024_02_13_14_22_05.mp4')
 
-    # # Check if the video file was opened successfully
-    # if not cap.isOpened():
-    #     print("Error opening video file")
-    #     exit()
+    # Check if the video file was opened successfully
+    if not cap.isOpened():
+        print("Error opening video file")
+        exit()
 
-    # # Read the first frame of the video
-    # ret, frame = cap.read()
+    # Read the first frame of the video
+    ret, frame = cap.read()
 
-    # # Check if the frame was read successfully
-    # if not ret:
-    #     print("Error reading video frame")
-    #     exit()
+    # Check if the frame was read successfully
+    if not ret:
+        print("Error reading video frame")
+        exit()
 
-    # # # Afficher le point uv
-    # # cv2.circle(frame, (u, v), 5, (0, 0, 255), -1)
+    # # Afficher le point uv
+    # cv2.circle(frame, (u, v), 5, (0, 0, 255), -1)
 
-    # # afficher les triangles de Delaunay
-    # for t in triangles:
-    #     t = t.astype(int)
-    #     cv2.polylines(frame, [t], True, (0, 255, 0), 2)
+    # afficher les triangles de Delaunay
+    for t in triangles:
+        t = t.astype(int)
+        cv2.polylines(frame, [t], True, (0, 255, 0), 2)
 
-    # # # afficher les coordonnées des pixels de tous les triangles
-    # # for i in range(len(image_points)):
-    # #     cv2.putText(frame, str(image_points[i]), (int(image_points[i][0]), int(image_points[i][1])), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
-    # # affiche tous les triangles selectionner par calculat_geographic_coordinates
+    # # afficher les coordonnées des pixels de tous les triangles
+    # for i in range(len(image_points)):
+    #     cv2.putText(frame, str(image_points[i]), (int(image_points[i][0]), int(image_points[i][1])), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
+    # affiche tous les triangles selectionner par calculat_geographic_coordinates
 
     # # affiche les déplacement de la voiture en pixel
     # for i in range(len(car_points) - 1):
@@ -144,13 +160,13 @@ def main():
 
 
 
-    # # Display the frame with triangles
-    # cv2.imshow('Video with Triangles', frame)
-    # cv2.waitKey(0)
+    # Display the frame with triangles
+    cv2.imshow('Video with Triangles', frame)
+    cv2.waitKey(0)
 
-    # # Release the video file and close the window
-    # cap.release()
-    # cv2.destroyAllWindows()
+    # Release the video file and close the window
+    cap.release()
+    cv2.destroyAllWindows()
 
 if __name__ == "__main__":
     main()

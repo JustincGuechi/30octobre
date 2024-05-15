@@ -1,14 +1,16 @@
 import cv2
+import pyperclip
 
 # Fonction de gestion du clic de souris
 def click_event(event, x, y, flags, param):
     if event == cv2.EVENT_LBUTTONDOWN:
-        print("Position du pixel (x, y) : ", x, y)
+        print("Position du pixel (x, y) : ", x,", ", y)
+        pyperclip.copy(f",[{x}, {y}]")
         color = frame[y, x]
         print("Valeur du pixel (BGR) : ", color)
 
 # Charger la vidéo
-video_path = 'static\\video\\Alyce_ICT-1287_2024-02-16_165010_194.mp4'
+video_path = 'static\\video\\C1_Thiers\\C1_Thiers_2024_02_13_14_22_05.mp4'
 cap = cv2.VideoCapture(video_path)
 
 print("Lecture de la vidéo...")
