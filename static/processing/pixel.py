@@ -10,7 +10,7 @@ def click_event(event, x, y, flags, param):
         print("Valeur du pixel (BGR) : ", color)
 
 # Charger la vidéo
-video_path = 'static\\video\\C3_AVIA\\C3_AVIA_2024_02_13_10_50_17.mp4'
+video_path = 'static\\video\\C1_Thiers\\C1_Thiers_2024_02_13_14_22_05.mp4'
 cap = cv2.VideoCapture(video_path)
 
 print("Lecture de la vidéo...")
