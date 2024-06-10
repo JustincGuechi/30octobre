@@ -146,8 +146,8 @@ def create_map(geo_triangles, car_geo_coordinates):
     # folium.PolyLine([(x["lat"], x["lon"]) for x in car_geo_coordinates], color='blue').add_to(map)
     # map.save('map.html')
     plan = cv2.imread('static/plan.png')
-    # zone_map(plan)
-    triangle_map(plan, geo_triangles)
+    zone_map(plan)
+    # triangle_map(plan, geo_triangles)
     car_geo_coordinates = [x for x in car_geo_coordinates if x["lat"] != -1 and x["lon"] != -1]
     cv2.polylines(plan, [np.array([(x["lat"], x["lon"]) for x in car_geo_coordinates]).astype(int)], False, (255, 0, 0), 2)
     cv2.imshow('plan', plan)
@@ -165,14 +165,15 @@ def zone_map(plan):
         data = json.load(f)
         for zone, points in data.items():
             color = tuple(np.random.randint(0, 256, 3).tolist())
-            points = [np.array(points).astype(int)]
-            cv2.polylines(plan, points, True, color, 2)
-            # Fill the zone with transparent color
-            overlay = plan.copy()
-            cv2.fillPoly(overlay, points, color)
-            alpha = 0.5  # Transparency factor (0.0-1.0)
-            plan = cv2.addWeighted(overlay, alpha, plan, 1 - alpha, 0)
-            plan = plan.astype(np.uint8)
+            # verifie si int et ext existe
+            if 'int' in points and 'ext' in points:
+                points_exterieur = [np.array(points["ext"]).astype(int)]
+                points_interieur = [np.array(points["int"]).astype(int)]
+                cv2.polylines(plan, points_exterieur, True, color, 2)
+                cv2.polylines(plan, points_interieur, True, color, 2)
+            else:
+                points = [np.array(points).astype(int)]
+                cv2.polylines(plan, points, True, color, 2)
 
 
 def process_video_with_triangles(triangles, video_path, data):
