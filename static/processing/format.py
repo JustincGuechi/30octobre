@@ -256,7 +256,7 @@ def main(video_name):
 
     data = load_json_data(json_path)
     # met que 10 % de data
-    data = data[:int(len(data) * 0.1)]
+    # data = data[:int(len(data) * 0.1)]
     image_points, geographic_coords = get_image_points_and_geo_coords(json_path)
     triangles, tri = get_triangles(image_points)
     print("Debut du convertion des données en coordonnées géographiques")
