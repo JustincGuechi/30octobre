@@ -8,6 +8,8 @@ import time
 import tqdm
 from sklearn.linear_model import LinearRegression
 import json
+import sys
+import glob
 # Paramètres de la caméra
 focal_length = 3.15  # Distance focale en mm
 aperture = 2.35      # Ouverture
@@ -60,8 +62,6 @@ def get_image_points_and_geo_coords(link):
         geographic_coords = [(47.322029, 5.051598), (47.321946, 5.051641), (47.321968, 5.051779), (47.322, 5.051837), (47.322011, 5.051762), (47.322061, 5.051871), (47.322163, 5.05175), (47.322148, 5.051658), (47.322115, 5.052182), (47.321746, 5.051855), (47.322039, 5.051642), (47.321699, 5.052118), (47.321727, 5.052172), (47.322106, 5.051819), (47.322132, 5.051782)]
         image_points = np.array([(345, 571), (754, 433), (539, 328), (452, 314), (428, 340), (345, 310), (91, 346), (5, 390), (303, 284), (798, 313), (318, 449), (697, 279), (653, 275), (242, 325), (178, 335)])
     elif 'C7_Carnot' in link:
-        # geographic_coords = [(47.321476, 5.051601), (47.321466, 5.051609), (47.321475, 5.05164), (47.321464, 5.051664), (47.321457, 5.051622), (47.321427, 5.051628), (47.321421, 5.051584), (47.321392, 5.051589), (47.321354, 5.051552), (47.321358, 5.05158), (47.321179, 5.051523), (47.321225, 5.051605), (47.321249, 5.051624), (47.321367, 5.051687), (47.321307, 5.051739), (47.321314, 5.051774), (47.321401, 5.051737), (47.321412, 5.051759), (47.321475, 5.05173), (47.321393, 5.051819), (47.321484, 5.051648), (47.321447, 5.052043), (47.321478, 5.051966), (47.321497, 5.051698), (47.321299, 5.051899), (47.321285, 5.052094), (47.321411, 5.05155)]
-        # image_points =np.array( [(584, 596), (562, 490), (353, 466), (323, 376), (524, 428), (560, 321), (722, 350), (695, 287), (776, 266), (714, 252), (751, 187), (685, 181), (640, 197), (497, 217), (477, 188), (435, 190), (360, 230), (308, 236), (156, 317), (282, 211), (260, 500), (86, 208), (0, 248), (0, 463), (359, 177), (255, 169),(797, 443)] )
         # Points de l'image pour C7_Carnot
         # image_points = np.array([[495, 217], [667, 194], [309, 234], [248, 492], [776, 298], [690, 254], [763, 213], [115, 217], [3, 284], [0, 504], [261, 173], [361, 177], [564, 568], [142, 340], [561, 324],[ 568, 220], [327, 373], [675, 289], [767, 262], [353, 466], [519, 422], [695, 345], [758, 306], [788, 287]], dtype=np.float32)
         # # Coordonnées géographiques pour C7_Carnot
@@ -108,11 +108,17 @@ def update_json_data(data, triangles, geo_triangles, tri):
             new_car_data = []
             for x, (lat, lon) in zip(car_data, car_geo_coordinates):
                 new_item = {
-                    "frame_id": x["frame_id"],
-                    "time": x["time"],
                     "lat": lat,
                     "lon": lon
                 }
+                if "frame_id" in x:
+                    new_item["frame_id"] = x["frame_id"]
+                if "time" in x:
+                    new_item["time"] = x["time"]
+                # print(x)
+                # print(new_item)
+                # # mettre une pause pour voir les coordonnées
+                # time.sleep(2)
                 new_car_data.append(new_item)
             item["data"] = new_car_data
         new_data.append(item)
@@ -125,26 +131,6 @@ def save_updated_json_data(link, new_data):
         json.dump(new_data, f, indent=4)
 
 def create_map(geo_triangles, car_geo_coordinates):
-    # # Crée une carte folium avec un fond de carte personnalisé
-    # map = folium.Map(location=(47.3216684, 5.0521941), zoom_start=20)
-    # folium.raster_layers.WmsTileLayer(
-    #     url=link_map_leaflet,
-    #     name='ORTHO2022_5cm',
-    #     fmt='image/png',
-    #     layers='0',
-    #     transparent=True,
-    #     overlay=True,
-    #     control=True,
-    # ).add_to(map)
-    # folium.LayerControl().add_to(map)
-    # for geo_t in geo_triangles:
-    #     # Ajoute les triangles à la carte
-    #     folium.Polygon(geo_t, color='green', fill=True, fill_color='green').add_to(map)
-    # # Crée le chemin de la voiture
-    # # retire les points qui sont à -1
-    # car_geo_coordinates = [x for x ikan car_geo_coordinates if x["lat"] != -1 and x["lon"] != -1]
-    # folium.PolyLine([(x["lat"], x["lon"]) for x in car_geo_coordinates], color='blue').add_to(map)
-    # map.save('map.html')
     plan = cv2.imread('static/plan.png')
     zone_map(plan)
     # triangle_map(plan, geo_triangles)
@@ -237,12 +223,13 @@ def smooth_trajectory(car_geo_coordinates, segment_size=15):
 
         model = LinearRegression().fit(lats, lons)
         lons_smoothed = model.predict(lats)
-
-        for lat, lon in zip(lats, lons_smoothed):
-            smoothed_coordinates.append({"lat": lat[0], "lon": lon})
+        
+        for i, coord in enumerate(segment):
+            smoothed_coordinates.append({"lat": coord["lat"], "lon": lons_smoothed[i], "time": coord["time"], "frame_id": coord["frame_id"]})
 
     return smoothed_coordinates
 def main(video_name):
+    print(f"Traitement de la vidéo '{video_name}'")
     video_path = f'static/video/{video_name}.mp4'
     json_path = f'static/video/json/{video_name}_user.json'
 
@@ -261,18 +248,25 @@ def main(video_name):
     triangles, tri = get_triangles(image_points)
     print("Debut du convertion des données en coordonnées géographiques")
     geo_triangles = convert_image_triangles_to_geo(triangles, image_points, geographic_coords)
-    id_person = data.index([x for x in data if x["Usager"] == "person"][-1])
-    process_video_with_triangles(triangles, video_path, data[id_person]["data"])
+    # id_person = data.index([x for x in data if x["Usager"] == "person"][-1])
+    # process_video_with_triangles(triangles, video_path, data[id_person]["data"])
     new_data = update_json_data(data, triangles, geo_triangles, tri)
     print("Debut du traitement du lissage des données")
     for item in tqdm.tqdm(new_data):
         if item["data"]:
             car_geo_coordinates = item["data"]
             item["data"] = smooth_trajectory(car_geo_coordinates)
+    # create_map(geo_triangles, new_data[id_person]["data"])
+    # print(new_data[id_person]["Usager"])
     save_updated_json_data(json_path, new_data)
-    create_map(geo_triangles, new_data[id_person]["data"])
-    print(new_data[id_person]["Usager"])
 
 if __name__ == "__main__":
-    video_name = 'C7_Carnot_2024_02_13_08_48_54'
-    main(video_name)
+    if len(sys.argv) > 1:
+        video_name = sys.argv[1]
+        main(video_name)
+    else:
+        video_files = glob.glob('static/video/*.mp4')
+        for video_file in video_files:
+            video_name = video_file.split('/')[-1].split("\\")[-1].split('.')[0]
+            main(video_name)
+# commande pour lancé le script : python3 static/processing/format.py C7_Carnot_2024_02_13_08_48_54
