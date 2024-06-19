@@ -1,94 +1,114 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
+
 <head>
-    <title>Affichage de vidéo avec Flask</title>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualisation des Usagers</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="{{ url_for('static', filename='js/usager.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/map.js') }}"></script>
 
-    <!-- Ajoutez le lien vers le fichier CSS -->
-    <link rel="stylesheet" href="static/css/main.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/Main.css') }}">
+    <style>
+        /* Style pour cacher la div par défaut */
+        #monForm {
+            display: none;
+        }
+    </style>
 </head>
+
 <body>
-    <div class="navbar">
-        <ul>
-            <li><a href="#">Vidéos</a></li>
-            <li><a href="#">Statistique</a></li>
-        </ul>
-    </div>
-    <div id="camera">
-        <div>
-            <label for="camera-select">Sélectionnez une caméra:</label>
-            <select id="camera-select">
-                <option value="C1">Caméra 1</option>
-                <option value="C2">Caméra 2</option>
-                <option value="C3">Caméra 3</option>
-                <option value="C4">Caméra 4</option>
-                <option value="C5">Caméra 5</option>
-            </select>
+
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div id="calendarContainer"></div>
         </div>
-
     </div>
-    <div class="controls">
-        <button onclick="seekToTime(0)">0s</button>
-        <button onclick="seekToTime(10)">10s</button>
-        <button onclick="seekToTime(30)">30s</button>
-        <button onclick="seekToTime(60)">1min</button>
-        <button onclick="seekToTime(120)">2min</button>
-        <button onclick="seekToTime(360)">6min</button>
-        <button onclick="seekToTime(1800)">30min</button>
+
+    <div style="display: flex;">
+        
+        <div style="flex: 1; padding-right: 20px;">
+            <button onclick="window.location.href='/statistiques'">Statistiques</button>
+            <button id="showCalendar">Afficher le calendrier</button>
+        
+            <div id="camera">
+                <div>
+                    <label for="camera-select">Sélectionnez une caméra:</label>
+                    <select id="camera-select">
+                        <option value="C1_Thiers">Boulevard Thiers</option>
+                        <option value="C2_Gray">Rue de Gray</option>
+                        <option value="C3_AVIA">Station AVIA</option>
+                        <option value="C4_Strasbourg">Boulevard de Strasbourg</option>
+                        <option value="C5_Boulangerie">Boulangerie</option>
+                        <option value="C6_Voltaire">Boulevard Voltaire</option>
+                        <option value="C7_Carnot">Boulevard Carnot</option>
+                    </select>
+                </div>
+                <div id="timer">Temps écoulé : 00:00:00</div>
+                <div id="timer_totaleseconde" style="display: block;"></div>
+                <div id="day_actual" style="display: none;"></div>
+                <div id="day_hour" style="display: block;"></div>
+
+
+                <div id="video-container" style="position: relative;">
+                    <video id="video" controls style="width: 800px; height: 600px;"></video>
+                    <canvas id="canvas"
+                        style="width: 800px;height: 600px; position: absolute; top: 0; left: 0;  pointer-events: none;"></canvas>
+                </div>
+                <div id="plan-container" style="position: relative;">
+                    <img src="{{ url_for('static', filename='img/plan.png') }}" alt="Description of the image"
+                        style="width: 733px; height: auto;">
+                    <canvas id="canvas_plan"
+                        style="width: 733px;height: 555px; position: absolute; top: 0; left: 0;  pointer-events: none;"></canvas>
+                </div>
+            </div>
+        </div>
+        <div style="flex: 1; padding-left: 20px;">
+            <h2>Interactions</h2>
+            <label for="interactionSelect">Sélectionner une interaction :</label>
+            <select id="interactionSelect">
+                <option value="">Toutes les interactions</option>
+            </select>
+            <label for="userTypeSelect">Sélectionner un utilisateur:</label>
+            <select id="userTypeSelect">
+                <option value="">Tous les utilisateurs</option>
+            </select>
+            <div id="filteredInteractions">
+                <!-- Les interactions filtrées seront affichées ici -->
+            </div>
+        </div>
     </div>
-    <div id="player" style="width: 600px; height: 337px;"></div>
-    <script src="https://unpkg.com/artplayer/dist/artplayer.js"></script>
-    <script>
-        const art = new Artplayer({
-            container: '#player',
-            url: '/video?camera=C1&heure=12&jours=16&mois=04&annee=24',
-            isLive: false,
-            muted: false,
-            autoplay: false,
-            pip: true,
-            autoSize: true,
-            autoMini: true,
-            screenshot: true,
-            setting: true,
-            loop: true,
-            flip: true,
-            playbackRate: true,
-            aspectRatio: true,
-            fullscreen: true,
-            fullscreenWeb: true,
-            subtitleOffset: true,
-            miniProgressBar: true,
-            mutex: true,
-            backdrop: true,
-            playsInline: true,
-            autoPlayback: true,
-            airplay: true,
-        });
 
-        // Init
-        const cameraSelect = document.getElementById('camera-select');
+    <!-- Bouton pour afficher le formulaire -->
+    <button id="afficherForm">Afficher le formulaire</button>
 
-        // Fonction
-        // Permet de se déplacer dans la vidéo
-        const seekToTime = (time) => {
-            art.seek = time;
-        }
-        // Permet de changer de caméra
-        function changeCamera() {
-            var camera = cameraSelect.value;
-            art.url = `/video?camera=${camera}&heure=12&jours=16&mois=04&annee=24`;
-            // attend que la video soit chargée
-            art.on('loadedmetadata', () => {
-                art.play();
-                seekToTime(0);
-            });
-        }
-
-
-        // Event
-        cameraSelect.addEventListener('change', changeCamera);
-    </script>
+    <!-- Div contenant le formulaire -->
+    <div id="monForm">
+        <form>
+            <div class="creat-details">
+                <li class="time-code-debut-type">Time-Code Début: <input type="text" name="time-code-debut" value="">
+                </li>
+                <li class="time-code-fin-type">Time-Code Fin: <input type="text" name="time-code-fin" value=""></li>
+                <li class="interaction-type">Interaction: <input type="text" name="interaction" value=""></li>
+                <li class="usager-1">Usager 1: </li>
+                <div id="list3" class="dropdown-check-list" tabindex="100"
+                    style=" overflow-y: scroll; max-height: 200px;">
+                    <input type="text" class="anchor3" placeholder="Ville"></span>
+                    <ul class="items">
+                        {% for item in data %}
+                        <li><input type="checkbox" value="{{ item.ID }}" />{{ item.ID }} </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <li class="commentaire-type">Commentaire: <input type="text" name="commentaire" value=""></li>
+                <li class="statut-type">Validé: <input type="text" name="statut" value=""></li>
+                <button type="button" class="creer-btn">Créer</button>
+            </div>
+        </form>
+    </div>
 </body>
-</html>
 
+</html>

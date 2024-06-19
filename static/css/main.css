@@ -1,59 +1,194 @@
-.navbar ul {
-    list-style-type: none;
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
     margin: 0;
-    padding: 0;
-    overflow: hidden;
+    padding: 20px;
 }
 
-.navbar li {
-    float: left;
-}
-
-.navbar li a {
-    display: block;
+h2 {
     color: #333;
-    text-align: center;
-    padding: 14px 16px;
-    text-decoration: none;
 }
 
-.navbar li a:hover {
-    background-color: #ddd;
+label {
+    font-weight: bold;
+    margin-right: 10px;
 }
 
-.camera {
-    clear: both;
-    float: left;
-    margin-top: 10px;
-    width: 50vw;
-    height: 50vh;
-    background-color: blue;
-}
-
-.camera .video-container {
-    position: relative;
-    padding-bottom: 56.25%;
-    padding-top: 30px;
-    height: 0;
-    overflow: hidden;
-    width: 50vw;
-    height: 50vh;
-    max-width: 800px;
-    max-height: 450px;
-    margin: 0 auto;
-    margin-top: 20px;
-    margin-bottom: 20px;
+select {
+    padding: 8px;
     border: 1px solid #ccc;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    background-color: red;
+    border-radius: 5px;
+    margin-bottom: 10px;
 }
 
-.controls {
-    clear: both;
-    float: right;
-    float: top;
+#filteredInteractions {
+    margin-top: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px;
+    background-color: #fff;
+    width: 50vw;
+    height: 80vh;
+    overflow: auto; /* ou 'scroll' selon vos besoins */
+
+}
+
+#filteredInteractions ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+#filteredInteractions ul li {
+    margin-bottom: 10px;
+}
+
+#filteredInteractions ul li:nth-child(even) {
+    background-color: #f9f9f9;}
+
+.interaction-details-container {
+    border: 2px solid blue;
+    border-radius: 5px;
     margin-top: 10px;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
+}
+
+.interaction-details {
+    padding: 10px;
+}
+
+/* Style pour améliorer l'apparence */
+input[type="text"], select {
+    width: 100%;
+    padding: 8px;
+    margin: 5px 0;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+input[type="submit"], button {
+    width: auto;
+    padding: 10px 20px;
+    background-color: #2261a9;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+input[type="submit"]:hover, button:hover {
+    background-color: #2261a9;
+}
+.interaction-details-container {
+        display: none; /* Cache le formulaire par défaut */
+    }
+
+    .button-container {
+        display: flex;
+        justify-content: center; /* Centre les boutons horizontalement */
+        align-items: flex-end; /* Aligne les boutons en bas */
+        margin-top: 10px;
+        padding-bottom: 5px; /* Espace en haut */
+    }
+
+    .button-container button {
+        margin: 0 10px; /* Espace horizontal entre les boutons */
+    }
+.dropdown-check-list {
+  display: inline-block;
+}
+
+.dropdown-check-list .anchor {
+  position: relative;
+  cursor: pointer;
+  display: inline-block;
+  padding: 5px 50px 5px 10px;
+  border: 1px solid #ccc;
+}
+
+.dropdown-check-list .anchor:after {
+  position: absolute;
+  content: "";
+  border-left: 2px solid black;
+  border-top: 2px solid black;
+  padding: 5px;
+  right: 10px;
+  top: 20%;
+  -moz-transform: rotate(-135deg);
+  -ms-transform: rotate(-135deg);
+  -o-transform: rotate(-135deg);
+  -webkit-transform: rotate(-135deg);
+  transform: rotate(-135deg);
+}
+
+.dropdown-check-list .anchor:active:after {
+  right: 8px;
+  top: 21%;
+}
+
+.dropdown-check-list ul.items {
+  padding: 2px;
+  display: none;
+  margin: 0;
+  border: 1px solid #ccc;
+  border-top: none;
+}
+
+.dropdown-check-list ul.items li {
+  list-style: none;
+}
+
+.dropdown-check-list.visible .anchor {
+  color: #0094ff;
+}
+
+.dropdown-check-list.visible .items {
+  display: block;
+}
+
+
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+  background-color: #fefefe;
+  margin: 10% auto;
+  padding: 20px;
+  border: 1px solid #888;
+  border-radius: 5px;
+  width: 50%; /* Taille du popup */
+}
+
+.day {
+
+  margin-bottom: 10px;
+    text-align: center;
+}
+
+.day button {
+    width: 90px;
+  display: inline-block;
+  margin-right: 4px; /* Ajoute un espace de 4px entre les boutons */
+  margin-bottom: 5px;
+}
+
+
+.close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
 }
