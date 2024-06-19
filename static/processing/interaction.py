@@ -37,7 +37,9 @@ def found_interaction(list_user, list_zone, authorised_zone):
                                     if interaction_started:
                                         interactions.append({
                                                 "user": user['Usager'],
-                                                "id": [user['ID']],
+                                                # genere un id unique pour chaque interaction
+                                                "id_interaction": str(user['ID']) + user['ID2'],
+                                                "id": [user['ID2']],
                                                 "interaction": "zone",
                                                 "zone": zone,
                                                 "start_time": start_time,
@@ -52,7 +54,8 @@ def found_interaction(list_user, list_zone, authorised_zone):
                 if interaction_started:
                     interactions.append({
                         "user": user['Usager'],
-                        "id": [user['ID']],
+                        "id_interaction": str(user['ID']) + user['ID2'],
+                        "id": [user['ID2']],
                         "interaction": "zone",
                         "zone": zone,
                         "start_time": start_time,
@@ -84,7 +87,8 @@ def found_interaction(list_user, list_zone, authorised_zone):
                                         if interaction_started:
                                             interactions.append({
                                                 "user": user['Usager'],
-                                                "id": [user['ID']],
+                                                "id_interaction": str(user['ID']) + user['ID2'],
+                                                "id": [user['ID2']],
                                                 "interaction": "zone",
                                                 "zone": zone,
                                                 "start_time": start_time,
@@ -99,7 +103,8 @@ def found_interaction(list_user, list_zone, authorised_zone):
                 if interaction_started:
                     interactions.append({
                         "user": user['Usager'],
-                        "id": [user['ID']],
+                        "id_interaction": str(user['ID']) + user['ID2'],
+                        "id": [user['ID2']],
                         "interaction": "zone",
                         "zone": zone,
                         "start_time": start_time,
