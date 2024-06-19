@@ -3,185 +3,270 @@ import cv2
 import folium
 from scipy.spatial import Delaunay
 import json
+import os
+import time
+import tqdm
+from sklearn.linear_model import LinearRegression
+import json
+import sys
+import glob
+# Paramètres de la caméra
+focal_length = 3.15  # Distance focale en mm
+aperture = 2.35      # Ouverture
+angle_diagonal = 16  # Angle de vue diagonal en degrés
 
-def calculate_geographic_coordinates(u, v, triangles, geo_triangles):
-    min_dist = 999999999
-    min_index = 0
+link_map_leaflet = 'https://tiles.arcgis.com/tiles/5e9nT6GAayqss4ni/arcgis/rest/services/ORTHO2022_5cm/MapServer/WMTS/1.0.0/WMTSCapabilities.xml'
 
-    # Check if the point is inside any triangle
-    for i in range(len(triangles)):
-        if cv2.pointPolygonTest(np.array(triangles[i]), (u, v), False) >= 0:
-            min_index = i
-            break
-        dist = abs(cv2.pointPolygonTest(np.array(triangles[i]), (u, v), True))
-        if dist < min_dist:
-            min_dist = dist
-            min_index = i
+def calculate_geographic_coordinates(u, v, triangles, geo_triangles, tri):
+    # Verifie si le point est à l'intérieur d'un triangle avec np.cross
+    for i, triangle in enumerate(triangles):
+        t = triangle
+        geo_t = geo_triangles[i]
 
-    t = triangles[min_index]
-    geo_t = geo_triangles[min_index]
+        # Extrait les coordonnées des sommets du triangle
+        u0 = t[0][0]
+        v0 = t[0][1]
+        u1 = t[1][0]
+        v1 = t[1][1]
+        u2 = t[2][0]
+        v2 = t[2][1]
 
-    t = triangles[min_index]
-    geo_t = geo_triangles[min_index]
+        # Extrait les coordonnées géographiques des sommets du triangle
+        lat0 = geo_t[0][0]
+        lon0 = geo_t[0][1]
+        lat1 = geo_t[1][0]
+        lon1 = geo_t[1][1]
+        lat2 = geo_t[2][0]
+        lon2 = geo_t[2][1]
 
-    u0 = t[0][0]
-    v0 = t[0][1]
-    u1 = t[1][0]
-    v1 = t[1][1]
-    u2 = t[2][0]
-    v2 = t[2][1]
+        # Calcule les coordonnées barycentriques
+        alpha = ((u-u2)*(v1-v2)+(v-v2)*(u2-u1))/((u0-u2)*(v1-v2)-(v0-v2)*(u1-u2))
+        beta = ((u-u2)*(v2-v0)+(v-v2)*(u0-u2))/((u0-u2)*(v1-v2)-(v0-v2)*(u1-u2))
 
-    lat0 = geo_t[0][0]
-    lon0 = geo_t[0][1]
-    lat1 = geo_t[1][0]
-    lon1 = geo_t[1][1]
-    lat2 = geo_t[2][0]
-    lon2 = geo_t[2][1]
+        # Interpole les coordonnées géographiques en utilisant les coordonnées barycentriques
+        lat = alpha*lat0 + beta*lat1 + (1-alpha-beta)*lat2
+        lon = alpha*lon0 + beta*lon1 + (1-alpha-beta)*lon2
+        if alpha >= 0 and beta >= 0 and (1-alpha-beta) >= 0:
+            return lat, lon
+    return -1, -1
 
-    alpha = ((u-u2)*(v1-v2)+(v-v2)*(u2-u1))/((u0-u2)*(v1-v2)-(v0-v2)*(u1-u2))
-    beta = ((u-u2)*(v2-v0)+(v-v2)*(u0-u2))/((u0-u2)*(v1-v2)-(v0-v2)*(u1-u2))
+    
 
-    lat = alpha*lat0 + beta*lat1 + (1-alpha-beta)*lat2
-    lon = alpha*lon0 + beta*lon1 + (1-alpha-beta)*lon2
+def load_json_data(link):
+    with open(link) as f:
+        data = json.load(f)
+    return data
 
-    return lat, lon
+def get_image_points_and_geo_coords(link):
+    if 'C1_Thiers' in link:
+        geographic_coords = [(47.322029, 5.051598), (47.321946, 5.051641), (47.321968, 5.051779), (47.322, 5.051837), (47.322011, 5.051762), (47.322061, 5.051871), (47.322163, 5.05175), (47.322148, 5.051658), (47.322115, 5.052182), (47.321746, 5.051855), (47.322039, 5.051642), (47.321699, 5.052118), (47.321727, 5.052172), (47.322106, 5.051819), (47.322132, 5.051782)]
+        image_points = np.array([(345, 571), (754, 433), (539, 328), (452, 314), (428, 340), (345, 310), (91, 346), (5, 390), (303, 284), (798, 313), (318, 449), (697, 279), (653, 275), (242, 325), (178, 335)])
+    elif 'C7_Carnot' in link:
+        # Points de l'image pour C7_Carnot
+        # image_points = np.array([[495, 217], [667, 194], [309, 234], [248, 492], [776, 298], [690, 254], [763, 213], [115, 217], [3, 284], [0, 504], [261, 173], [361, 177], [564, 568], [142, 340], [561, 324],[ 568, 220], [327, 373], [675, 289], [767, 262], [353, 466], [519, 422], [695, 345], [758, 306], [788, 287]], dtype=np.float32)
+        # # Coordonnées géographiques pour C7_Carnot
+        # geographic_coords = [(47.321361, 5.051694), (47.321222, 5.051583), (47.321417, 5.051750), (47.321500, 5.051639), (47.321361, 5.051528), (47.321361, 5.051583), (47.321125, 5.051428), (47.321447, 5.052046), (47.321563, 5.051865),(47.321529, 5.051678), (47.321286, 5.052094), (47.321300, 5.051900), (47.321475, 5.051601), (47.321483, 5.051722), (47.321429, 5.051628),(47.321346, 5.051657), (47.321464, 5.051666),(47.321390, 5.051593),(47.321318, 5.051514),(47.321476, 5.051640), (47.321457, 5.051622), (47.321421, 5.051584), (47.321384, 5.051546), (47.321348, 5.051510)]
+        geographic_coords = [(291, 607), (286, 617), (299, 625), (274, 625), (278, 651), (253, 661), (257, 685), (235, 713), (250, 712), (310, 703), (338, 680), (342, 665), (333, 617), (506, 639), (302, 580), (316, 594), (466, 612), (424, 790), (342, 754), (275, 798), (255, 835), (262, 615)]
+        image_points =np.array( [(244, 499), (354, 467), (321, 375), (521, 426), (560, 326), (721, 349), (696, 288), (777, 268), (714, 249), (500, 217), (361, 227), (310, 235), (157, 316), (91, 210), (0, 564), (0, 461), (2, 248), (359, 170), (478, 187), (634, 186), (688, 190),(585, 597)] )
+    else:
+        image_points = np.array([])
+        geographic_coords = [()]
+    return image_points, geographic_coords
 
+def get_triangles(image_points):
+    # Effectue la triangulation de Delaunay sur les points de l'image
+    tri = Delaunay(image_points)
+    triangles = image_points[tri.simplices]
+    return triangles, tri
 
-def main():
-    # Coordonnées des points sur l'image (pixels)
-    image_points = np.array([[495, 217], [667, 194], [309, 234], [248, 492], [776, 298], [690, 254], [763, 213], [115, 217], [3, 284], [0, 504], [261, 173], [361, 177], [564, 568], [142, 340], [561, 324],[ 568, 220], [327, 373], [675, 289], [767, 262]], dtype=np.float32)
-
-
-    # donne la liste des triangles de Delaunay
-    tri = Delaunay(image_points).simplices
-    triangles = image_points[tri]
-
-    geographic_coords = [(47.321361, 5.051694), (47.321222, 5.051583), (47.321417, 5.051750), (47.321500, 5.051639), (47.321361, 5.051528), (47.321361, 5.051583), (47.321125, 5.051428), (47.321447, 5.052046), (47.321563, 5.051865),(47.321529, 5.051678), (47.321286, 5.052094), (47.321300, 5.051900), (47.321475, 5.051601), (47.321483, 5.051722), (47.321429, 5.051628),(47.321346, 5.051657), (47.321464, 5.051666),(47.321390, 5.051593),(47.321318, 5.051514)]
-
-    # faire que les triangles correspondent aux coordonnées géographiques
+def convert_image_triangles_to_geo(triangles, image_points, geographic_coords):
     geo_triangles = []
     for t in triangles:
         geo_t = []
         for p in t:
+            # Trouve la coordonnée géographique correspondante pour chaque point de l'image
             geo_t.append(geographic_coords[np.where((image_points == p).all(axis=1))[0][0]])
         geo_triangles.append(geo_t)
+    return geo_triangles
 
-    # Load the JSON file
+def update_json_data(data, triangles, geo_triangles, tri):
+    new_data = []
 
-    with open('./static/video/json/annotated_Alyce_ICT-1287_2024-02-16_165010_194.webm.json') as f:
-        data = json.load(f)
+    for item in tqdm.tqdm(data):
+        car_data = item["data"]
+        if car_data:
+            car_coordinates = [(x["x"], x["y"], x["h"], x["w"]) for x in car_data]
+            car_points = np.array(car_coordinates, dtype=np.float32)
+            car_points[:, 1] = car_points[:, 1] + car_points[:, 2] / 2
+            car_geo_coordinates = []
+            for p in car_points:
+                u = p[0]
+                v = p[1] + p[3] / 2
+                # Calcule les coordonnées géographiques pour chaque point de voiture
+                lat, lon = calculate_geographic_coordinates(u, v, triangles, geo_triangles, tri)
+                car_geo_coordinates.append((lat, lon))
+            new_car_data = []
+            for x, (lat, lon) in zip(car_data, car_geo_coordinates):
+                new_item = {
+                    "lat": lat,
+                    "lon": lon
+                }
+                if "frame_id" in x:
+                    new_item["frame_id"] = x["frame_id"]
+                if "time" in x:
+                    new_item["time"] = x["time"]
+                # print(x)
+                # print(new_item)
+                # # mettre une pause pour voir les coordonnées
+                # time.sleep(2)
+                new_car_data.append(new_item)
+            item["data"] = new_car_data
+        new_data.append(item)
+    return new_data
 
-    # Extract the coordinates for the first car
-    car_data = next(item for item in data if item["Usager"] == "person" and item["ID"] == 89)
-    car_coordinates = [(item["x"], item["y"], item["h"], item["w"]) for item in car_data["data"]]
+def save_updated_json_data(link, new_data):
+    # Sauvegarde les données JSON mises à jour dans un nouveau fichier
+    link = link.replace('.json', '_geo.json')
+    with open(link, 'w') as f:
+        json.dump(new_data, f, indent=4)
 
-    # Convert the car coordinates to numpy array
-    car_points = np.array(car_coordinates, dtype=np.float32)
-
-    # edit car_points doit être en bas au millieu de la boite
-    car_points[:, 1] = car_points[:, 1] + car_points[:, 2] / 2
-
-    # Calculate the geographic coordinates for each car point
-    car_geo_coordinates = []
-    for p in car_points:
-        u = p[0]
-        v = p[1]
-        lat, lon = calculate_geographic_coordinates(u, v, triangles, geo_triangles)
-        car_geo_coordinates.append((lat, lon))
-
-    # fait le trajet de la voiture sur une carte
-    map = folium.Map(location=car_geo_coordinates[0], zoom_start=15)
-    folium.PolyLine(locations=car_geo_coordinates, color='red').add_to(map)
-    folium.Marker(car_geo_coordinates[0], popup='Start').add_to(map)
-    folium.Marker(car_geo_coordinates[-1], popup='End').add_to(map)
-    for geo_t in geo_triangles:
-        folium.Polygon(geo_t, color='green', fill=True, fill_color='green').add_to(map)
-    map.save('map.html')
-    cap = cv2.VideoCapture('static\\video\\Alyce_ICT-1287_2024-02-16_165010_194.mp4')
-
-    # Check if the video file was opened successfully
-    if not cap.isOpened():
-        print("Error opening video file")
-        exit()
-
-    # Read the first frame of the video
-    ret, frame = cap.read()
-
-    # Check if the frame was read successfully
-    if not ret:
-        print("Error reading video frame")
-        exit()
-
-    # # Afficher le point uv
-    # cv2.circle(frame, (u, v), 5, (0, 0, 255), -1)
-
-    # afficher les triangles de Delaunay
-    for t in triangles:
-        t = t.astype(int)
-        cv2.polylines(frame, [t], True, (0, 255, 0), 2)
-
-    # # afficher les coordonnées des pixels de tous les triangles
-    # for i in range(len(image_points)):
-    #     cv2.putText(frame, str(image_points[i]), (int(image_points[i][0]), int(image_points[i][1])), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
-    # affiche tous les triangles selectionner par calculat_geographic_coordinates
-
-    # affiche les déplacement de la voiture en pixel
-    for i in range(len(car_points) - 1):
-        cv2.arrowedLine(frame, (int(car_points[i][0]), int(car_points[i][1])), (int(car_points[i+1][0]), int(car_points[i+1][1])), (0, 0, 255), 2)
-
-
-
-    # Display the frame with triangles
-    cv2.imshow('Video with Triangles', frame)
+def create_map(geo_triangles, car_geo_coordinates):
+    plan = cv2.imread('static/plan.png')
+    zone_map(plan)
+    # triangle_map(plan, geo_triangles)
+    car_geo_coordinates = [x for x in car_geo_coordinates if x["lat"] != -1 and x["lon"] != -1]
+    cv2.polylines(plan, [np.array([(x["lat"], x["lon"]) for x in car_geo_coordinates]).astype(int)], False, (255, 0, 0), 2)
+    cv2.imshow('plan', plan)
     cv2.waitKey(0)
-
-    # Release the video file and close the window
-    cap.release()
     cv2.destroyAllWindows()
 
+def triangle_map(plan, geo_triangles):
+    for t in geo_triangles:
+        t = np.array(t).astype(int)
+        cv2.polylines(plan, [t], True, (0, 255, 0), 2)
+
+def zone_map(plan):
+    # ouverture du json qui contient les coordonnées des zones
+    with open('static/ortho.json') as f:
+        data = json.load(f)
+        for zone, points in data.items():
+            color = tuple(np.random.randint(0, 256, 3).tolist())
+            # verifie si int et ext existe
+            if 'int' in points and 'ext' in points:
+                points_exterieur = [np.array(points["ext"]).astype(int)]
+                points_interieur = [np.array(points["int"]).astype(int)]
+                cv2.polylines(plan, points_exterieur, True, color, 2)
+                cv2.polylines(plan, points_interieur, True, color, 2)
+            else:
+                points = [np.array(points).astype(int)]
+                cv2.polylines(plan, points, True, color, 2)
+
+
+def process_video_with_triangles(triangles, video_path, data):
+    # Traite la vidéo et affiche les triangles sur chaque image
+
+    cap = cv2.VideoCapture(video_path)
+
+    if not cap.isOpened():
+        print("Erreur lors de l'ouverture du fichier vidéo")
+        exit()
+    
+    ret, frame = cap.read()
+    h, w = frame.shape[:2]
+
+    # Calcul de la distance focale en pixels
+    focal_length_px = (w / 2) / np.tan(np.deg2rad(angle_diagonal / 2))
+
+    # Matrice de caméra (intrinsics)
+    camera_matrix = np.array([[focal_length_px, 0, w / 2],
+                            [0, focal_length_px, h / 2],
+                            [0, 0, 1]])
+
+    # Coefficients de distorsion
+    dist_coeffs = np.array([-5.5, -44.22, 0, 0, -100])  # k1, k2, p1, p2, k3
+    undistorted_frame = frame
+    undistorted_frame = cv2.undistort(frame, camera_matrix, dist_coeffs)
+    if not ret:
+        print("Erreur lors de la lecture de l'image vidéo")
+        exit()
+
+    for t in triangles:
+        t = t.astype(int)
+        cv2.polylines(undistorted_frame, [t], True, (0, 255, 0), 2)
+        # Écrit les coordonnées sur l'image
+        for p in t:
+            cv2.putText(undistorted_frame, f"({p[0]}, {p[1]})", (p[0], p[1]), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+    # afficher le traget de data
+    for x in data:
+        cv2.circle(undistorted_frame, (int(x["x"]), int(x["y"])+int(x["h"])//2), 5, (255, 0, 0), -1)
+
+    cv2.imshow('Video avec les triangles', undistorted_frame)
+
+def smooth_trajectory(car_geo_coordinates, segment_size=15):
+    """
+    Lisse la trajectoire en utilisant une régression linéaire sur des segments de taille segment_size.
+    """
+    smoothed_coordinates = []
+
+    for i in range(0, len(car_geo_coordinates), segment_size):
+        segment = car_geo_coordinates[i:i + segment_size]
+        if len(segment) < 2:
+            smoothed_coordinates.extend(segment)
+            continue
+
+        lats = np.array([coord["lat"] for coord in segment]).reshape(-1, 1)
+        lons = np.array([coord["lon"] for coord in segment])
+
+        if -1 in lats or -1 in lons:
+            smoothed_coordinates.extend(segment)
+            continue
+
+        model = LinearRegression().fit(lats, lons)
+        lons_smoothed = model.predict(lats)
+        
+        for i, coord in enumerate(segment):
+            smoothed_coordinates.append({"lat": coord["lat"], "lon": lons_smoothed[i], "time": coord["time"], "frame_id": coord["frame_id"]})
+
+    return smoothed_coordinates
+def main(video_name):
+    print(f"Traitement de la vidéo '{video_name}'")
+    video_path = f'static/video/{video_name}.mp4'
+    json_path = f'static/video/json/{video_name}_user.json'
+
+    if not os.path.exists(video_path):
+        print(f"Le fichier vidéo '{video_path}' n'existe pas")
+        exit()
+
+    if not os.path.exists(json_path):
+        print(f"Le fichier JSON '{json_path}' n'existe pas")
+        exit()
+
+    data = load_json_data(json_path)
+    # met que 10 % de data
+    # data = data[:int(len(data) * 0.1)]
+    image_points, geographic_coords = get_image_points_and_geo_coords(json_path)
+    triangles, tri = get_triangles(image_points)
+    print("Debut du convertion des données en coordonnées géographiques")
+    geo_triangles = convert_image_triangles_to_geo(triangles, image_points, geographic_coords)
+    # id_person = data.index([x for x in data if x["Usager"] == "person"][-1])
+    # process_video_with_triangles(triangles, video_path, data[id_person]["data"])
+    new_data = update_json_data(data, triangles, geo_triangles, tri)
+    print("Debut du traitement du lissage des données")
+    for item in tqdm.tqdm(new_data):
+        if item["data"]:
+            car_geo_coordinates = item["data"]
+            item["data"] = smooth_trajectory(car_geo_coordinates)
+    # create_map(geo_triangles, new_data[id_person]["data"])
+    # print(new_data[id_person]["Usager"])
+    save_updated_json_data(json_path, new_data)
+
 if __name__ == "__main__":
-    main()
-
-
-# # # Create a map centered on the first geographic coordinate
-# map = folium.Map(location=[lat, lon], zoom_start=15)
-
-# # Draw the triangles on the map
-# for geo_t in geo_triangles:
-#     folium.Polygon(geo_t, color='green', fill=True, fill_color='green').add_to(map)
-# folium.Marker([lat, lon], popup='Pixel Location').add_to(map)
-
-# # Save the map as an HTML file
-# map.save('map.html')
-
-# # Open the video
-
-
-# # Coordonnées géographiques
-
-
-# t1=[[3, 284], [115, 217], [248, 492]]
-# t2=[[115, 217], [309, 234], [248, 492]]
-# t3=[[115, 217], [667, 194], [309, 234]]
-# t4=[[309, 234], [690, 254], [667, 194]]
-# t5=[[690, 254], [763, 213], [667, 194]]
-# t6=[[690, 254], [776, 298], [763, 213]]
-# t7=[[690, 254], [776, 298], [309, 234]]
-# t8=[[776, 298], [248, 492], [309, 234]]
-# t9=[[0, 504], [3, 284], [248, 492]]
-# t10=[[261, 173], [115, 217], [361, 177]]
-# t11=[[361, 177], [115, 217], [667, 194]]
-# triangles = [t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11]
-# meme triangle mais en geo a partir des coordonnées des points sur l'image
-# geo_t1=[[47.321531, 5.051899], [47.321447, 5.052046], [47.321500, 5.051639]]
-# geo_t2=[[47.321447, 5.052046], [47.321361, 5.051583], [47.321500, 5.051639]]
-# geo_t3=[[47.321447, 5.052046], [47.321222, 5.051583], [47.321361, 5.051750]]
-# geo_t4=[[47.321222, 5.051583], [47.321361, 5.051583], [47.321361, 5.051750]]
-# geo_t5=[[47.321361, 5.051583], [47.321361, 5.051528], [47.321500, 5.051639]]
-# geo_t6=[[47.321361, 5.051583], [47.321361, 5.051528], [47.321222, 5.051583]]
-# geo_t7=[[47.321361, 5.051583], [47.321222, 5.051583], [47.321417, 5.051750]]
-# geo_t8=[[47.321361, 5.051583], [47.321417, 5.051750], [47.321500, 5.051639]]
-# geo_t9=[[47.321529, 5.051678], [47.321531, 5.051899], [47.321500, 5.051639]]
-# geo_t10=[[47.321286, 5.052094], [47.321447, 5.052046], [47.321300, 5.051900]]
-# geo_t11=[[47.321300, 5.051900], [47.321447, 5.052046], [47.321361, 5.051583]]
-# geo_triangles = [geo_t1, geo_t2, geo_t3, geo_t4, geo_t5, geo_t6, geo_t7, geo_t8, geo_t9, geo_t10, geo_t11]
+    if len(sys.argv) > 1:
+        video_name = sys.argv[1]
+        main(video_name)
+    else:
+        video_files = glob.glob('static/video/*.mp4')
+        for video_file in video_files:
+            video_name = video_file.split('/')[-1].split("\\")[-1].split('.')[0]
+            main(video_name)
+# commande pour lancé le script : python3 static/processing/format.py C7_Carnot_2024_02_13_08_48_54

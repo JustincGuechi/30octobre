@@ -18,7 +18,7 @@ def data():
     jours = request.args.get('jours')
     mois = request.args.get('mois')
     annee = request.args.get('annee')
-    
+
     json_file_path = f"static/video/json/annotated_Video_{jours}{mois}{annee}_{heure}H_{camera}.webm.json"
     print(f"Chargement des données JSON pour la caméra {camera}")
 
