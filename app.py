@@ -105,7 +105,6 @@ def get_json_for_plan():
                     matched_files.append({"Time_code_debut": timedebutseconde, "data": data})
                 except json.JSONDecodeError:
                     return jsonify({"error": f"Error decoding JSON in file {filename}"}), 500
-    print(len(matched_files))
     return jsonify(matched_files)
 
 @app.route('/statistiques')
@@ -124,11 +123,9 @@ def get_video_exist():
     video_directory = os.path.join("static", "video")
     video_files = []
     list_file = os.listdir(video_directory)
-    print(list_file)
     for filename in list_file:
         if filename.startswith(camera):
             video_files.append(filename)
-            print(filename)
     # Trier les fichiers vidéo par heure
     sorted_files = sorted(video_files)
     date_hour_exist = []
@@ -184,7 +181,6 @@ def update_interaction_valider():
     nameprefix = find_video_file_json(camera, dayHour_avant)
     nameprefix = os.path.splitext(nameprefix)[0]
     json_file_path1 = os.path.join(f"{nameprefix}.json")
-    print(json_file_path1)
     if os.path.exists(json_file_path1):
         with open(json_file_path1, 'r') as f:
             data1 = json.load(f)  # Charge les données JSON depuis le fichier
@@ -216,7 +212,6 @@ def update_interaction_valider():
     nameprefix = find_video_file_json(camera, dayHour_avant)
     nameprefix = os.path.splitext(nameprefix)[0]
     json_file_path = os.path.join(f"{nameprefix}_geo_interactions.json")
-    print(json_file_path)
     if os.path.exists(json_file_path):
         with open(json_file_path, 'r') as f:
             data = json.load(f)  # Charge les données JSON depuis le fichier
@@ -298,7 +293,6 @@ def update_interaction():
     nameprefix = find_video_file_json(camera, dayHour_avant)
     nameprefix = os.path.splitext(nameprefix)[0]
     json_file_path1 = os.path.join(f"{nameprefix}.json")
-    print(json_file_path1)
     if os.path.exists(json_file_path1):
         with open(json_file_path1, 'r') as f:
             data1 = json.load(f)  # Charge les données JSON depuis le fichier
@@ -330,7 +324,7 @@ def update_interaction():
     nameprefix = find_video_file_json(camera, dayHour_avant)
     nameprefix = os.path.splitext(nameprefix)[0]
     json_file_path = os.path.join(f"{nameprefix}_geo_interactions.json")
-    print(json_file_path)
+
     if os.path.exists(json_file_path):
         with open(json_file_path, 'r') as f:
             data = json.load(f)  # Charge les données JSON depuis le fichier
@@ -349,16 +343,16 @@ def update_interaction():
     for interaction in data:
         if interaction['id_interaction'] == interaction_id:
             interaction['interaction'] = interaction_type
-            interaction['start_time'] = interaction_time_code_debut
-            interaction['end_time'] = interaction_time_code_fin
+            interaction['start_time'] = int(interaction_time_code_debut)
+            interaction['end_time'] = int(interaction_time_code_fin)
             interaction['commentaire'] = commentaire
             break
     # Mettre à jour les données appropriées
     for interaction in data1:
         if interaction['id_interaction'] == interaction_id:
             interaction['interaction'] = interaction_type
-            interaction['start_time'] = interaction_time_code_debut
-            interaction['end_time'] = interaction_time_code_fin
+            interaction['start_time'] = int(interaction_time_code_debut)
+            interaction['end_time'] = int(interaction_time_code_fin)
             interaction['commentaire'] = commentaire
             break
 
@@ -371,17 +365,13 @@ def update_interaction():
         json.dump(data1, file, indent=4)
 
     # Exemple de traitement de données - Affichage dans la console
-    print("ID:", interaction_id)
-    print("Interaction:", interaction_type)
-    print("Commentaire:", commentaire)
-    print("Validé:", valide)
-
+   
     # Retourner une réponse (par exemple, un message de succès)
     return 'Données mises à jour avec succès !'
 
 @app.route('/get_usagers1', methods=['GET'])
 def get_usagers1():
-    print("get_usager")
+
     camera = request.args.get('camera')
     dayHour = request.args.get('dayHour')
     if not camera or not dayHour:
@@ -441,7 +431,7 @@ def get_usagers2():
  
 @app.route('/get_interactions1', methods=['GET'])
 def get_interactions1():
-    print("get_usager")
+
     camera = request.args.get('camera')
     dayHour = request.args.get('dayHour')
     if not camera or not dayHour:
@@ -491,7 +481,6 @@ def get_interactions2():
  
     nameprefix = find_video_file_json(camera, dayHour_prefix)
     nameprefix = os.path.splitext(nameprefix)[0]
-    print(nameprefix)
     json_file_path = os.path.join(f"{nameprefix}.json")
     if os.path.exists(json_file_path):
         with open(json_file_path, 'r') as f:
@@ -532,7 +521,6 @@ def delete_interaction():
     nameprefix = find_video_file_json(camera, dayHour_avant)
     nameprefix = os.path.splitext(nameprefix)[0]
     json_file_path1 = os.path.join(f"{nameprefix}.json")
-    print(json_file_path1)
     if os.path.exists(json_file_path1):
         with open(json_file_path1, 'r') as f:
             data1 = json.load(f)  # Charge les données JSON depuis le fichier
@@ -564,7 +552,6 @@ def delete_interaction():
     nameprefix = find_video_file_json(camera, dayHour_avant)
     nameprefix = os.path.splitext(nameprefix)[0]
     json_file_path = os.path.join(f"{nameprefix}_geo_interactions.json")
-    print(json_file_path)
     if os.path.exists(json_file_path):
         with open(json_file_path, 'r') as f:
             data = json.load(f)  # Charge les données JSON depuis le fichier
@@ -629,7 +616,6 @@ def create_interaction():
             # Ajouter l'ID de l'usager à la liste des usagers
             usagers.append({'ID_usager': usager.get('ID_usager')})
 
-    print("ID des usagers :", usagers)
 
     # Charger les données JSON existantes à partir du fichier
     with open(urlVideoInteraction, 'r') as file:
@@ -736,7 +722,6 @@ def video2():
 
     video_path = find_video_file(camera, dayHour_prefix)
     if video_path:
-        print("Video select", video_path)
         if os.path.exists(video_path):
             return send_file(video_path, mimetype='video/webm')
         else:
@@ -796,7 +781,6 @@ def data1():
     nameprefix = find_video_file_json(camera, dayHour_avant)
     nameprefix = os.path.splitext(nameprefix)[0]
     json_file_path = os.path.join(f"{nameprefix}.json")
-    print(json_file_path)
     if os.path.exists(json_file_path):
         with open(json_file_path, 'r') as f:
             data = json.load(f)  # Charge les données JSON depuis le fichier
@@ -821,7 +805,6 @@ def data2():
     nameprefix = find_video_file_json(camera, dayHour_prefix)
     nameprefix = os.path.splitext(nameprefix)[0]
     json_file_path = os.path.join(f"{nameprefix}.json")
-    print(json_file_path)
     if os.path.exists(json_file_path):
         with open(json_file_path, 'r') as f:
             data = json.load(f)  # Charge les données JSON depuis le fichier

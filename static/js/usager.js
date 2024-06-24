@@ -41,13 +41,14 @@ $(document).ready(function () {
   }
 
   function afficherID(userData) {
+$('#userIDSelect').empty();
     // Création des options du menu déroulant pour les utilisateurs
     var utilisateurs = {};
     userData.forEach(function (obj) {
-      if (!utilisateurs[obj.Usager]) {
+
         utilisateurs[obj.Usager] = true;
         $('#userIDSelect').append('<option value="' + obj.ID + '">' + obj.ID + '</option>');
-      }
+      
     });
   }
 
@@ -60,7 +61,7 @@ $(document).ready(function () {
     interactionData.forEach(function (obj) {
       if (!interactions[obj.Interaction]) {
         interactions[obj.Interaction] = true;
-        $('#interactionSelect').append('<option value="' + obj.Interaction + '">' + obj.Interaction + '</option>');
+        $('#interactionSelect').append('<option value="' + obj.Interaction + '">' + obj.Interaction +'</option>');
       }
     });
 
@@ -159,7 +160,7 @@ $(document).ready(function () {
       var totalsecondsFormatted = totalseconds.toString().padStart(2, '0');
 
       interactionsHtml += "Heure de fin :" + hoursFormatted + ":" + minutesFormatted + ":" + secondsFormatted;
-      interactionsHtml += " Temps total :" + totalhoursFormatted + ":" + totalminutesFormatted + ":" + totalsecondsFormatted +
+      interactionsHtml += " Temps total :" + totalhoursFormatted + ":" + totalminutesFormatted + ":" + totalsecondsFormatted + " id interaction : " + obj.id_interaction + "</li>";
 
         "</li>";
       interactionsHtml += '<div class="interaction-details-container">';
@@ -170,7 +171,7 @@ $(document).ready(function () {
         '"></li>';
       interactionsHtml +=
         '<li class="time-code-fin-time">Heure de fin: <input type="text" name="time-code-fin" value="' +
-        hoursFormatted + ":" + minutesFormatted + ":" + secondsFormatted +
+        hoursFormatted + ":" + minutesFormatted + ":" + secondsFormatted + 
         '"></li>';
       interactionsHtml +=
         '<li class="interaction-type">Interaction: <input type="text" name="interaction" value="' +
