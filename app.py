@@ -14,7 +14,29 @@ app.secret_key = secret_key # Assurez-vous de définir une clé secrète sécuri
 app.config['SESSION_TYPE'] = 'filesystem'
 
 
+@app.route('/get_ids', methods=['GET'])
+def get_ids():
+    camera = request.args.get('camera')
+    dayHour = request.args.get('dayHour')
+    if not camera or not dayHour:
+        return "Camera or dayHour parameter is missing", 400
 
+    # Extraction de l'heure de début de l'intervalle
+    dayHour_split = dayHour.split("_")
+    dayHour_prefix = "_".join(dayHour_split[:4]) + "_"
+
+    nameprefix = find_video_file_json(camera, dayHour_prefix)
+    nameprefix = os.path.splitext(nameprefix)[0]
+    json_file_path = os.path.join(f"{nameprefix}_light.json")
+
+    if os.path.exists(json_file_path):
+        with open(json_file_path, 'r') as f:
+            data = json.load(f)  # Charge les données JSON depuis le fichier
+
+        ids = [entry['ID'] for entry in data['Data']]  # Extraction des IDs
+        return jsonify(ids)
+    else:
+        return f"JSON data not found for camera={camera} and dayHour={dayHour_prefix}", 404
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -578,6 +600,7 @@ def delete_interaction():
     # Retourner une réponse indiquant que l'interaction a été supprimée avec succès
     return 'Interaction ID {} supprimée avec succès !'.format(interaction_id)
 
+
 @app.route('/create_interaction', methods=['POST'])
 def create_interaction():
     if not session.get('logged_in'):
@@ -632,6 +655,7 @@ def create_interaction():
     # Vous pouvez retourner une réponse JSON pour informer le frontend que l'interaction a été créée avec succès
     response = {'success': True, 'message': 'Nouvelle interaction créée avec succès !'}
     return jsonify(response)
+ 
 
 
 def find_video_file(camera, dayHour_prefix):

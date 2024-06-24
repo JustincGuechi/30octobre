@@ -192,3 +192,15 @@ input[type="submit"]:hover, button:hover {
   text-decoration: none;
   cursor: pointer;
 }
+#timer {
+  font-family: 'Arial', sans-serif;
+  font-size: 24px;
+  color: #ffffff;
+  background-color: #193115;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  width: 400px;
+  margin: 5px auto;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}

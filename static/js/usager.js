@@ -17,6 +17,7 @@ $(document).ready(function () {
   var hour;
   spinner();
 
+  
 
   function afficherUsagers(userData) {
     // Création des options du menu déroulant pour les utilisateurs
@@ -280,7 +281,8 @@ $(document).ready(function () {
       timecode = interactionToUpdate.Time_code_fin.split(":");
       stop_time_update = parseInt(timecode[0]) * 3600 + parseInt(timecode[1]) * 60 + parseInt(timecode[2]) - time;
      
-
+      console.log("start_time_update", start_time_update);
+      console.log("stop_time_update", stop_time_update);
       const day_hour = document.getElementById("day_hour");
       var heureActuelleFormatted = parseInt(day_hour.textContent)// Ajoute un zéro devant si nécessaire et prend les deux derniers chiffres
       
@@ -348,7 +350,72 @@ $(document).ready(function () {
         },
       });
     });
+    $(".creer-btn").click(function () {
+      console.log("Créer button clicked");
+      // Récupérer les valeurs des champs de texte
+      const startTime = document.querySelector('input[name="newstart_time"]').value;
+      const endTime = document.querySelector('input[name="newend_time"]').value;
+      const interaction = document.querySelector('input[name="newinteraction"]').value;
+      const commentaire = document.querySelector('input[name="newcommentaire"]').value;
+      const valide = document.querySelector('input[name="newvalide"]').checked;
+  
+      // Récupérer les valeurs des checkboxes sélectionnées
+      const selectedValues = Array.from(document.querySelectorAll('#list3 .items input[type="checkbox"]:checked'))
+                                  .map(checkbox => checkbox.value);
+  
+      // Préparer les données pour la requête AJAX
+      const data = {
+          start_time: startTime,
+          end_time: endTime,
+          interaction: interaction,
+          selected_values: selectedValues,
+          commentaire: commentaire,
+          valide: valide
+      };
+      console.log("data", data);
+
+      time = parseInt(data_minute_sec["minutes"]) * 60 + parseInt(data_minute_sec["seconds"]) + hour * 3600;
+      timecode =  data["start_time"].split(":");
+      console.log(timecode);
+  
+      start_time_update = parseInt(timecode[0]) * 3600 + parseInt(timecode[1]) * 60 + parseInt(timecode[2]) - time;
+      timecode = data["end_time"].split(":");
+      stop_time_update = parseInt(timecode[0]) * 3600 + parseInt(timecode[1]) * 60 + parseInt(timecode[2]) - time;
+       
+      const numvideo = document.getElementById("num_video");
+      var num_video = parseInt(numvideo.textContent)// Ajoute un zéro devant si nécessaire et prend les deux derniers chiffres
+      
+  
+       $.ajax({
+        url: "/create_interaction", // Remplacez '/your-endpoint-url' par l'URL de votre endpoint
+        method: "GET",
+        data: {
+          start_time: start_time_update,
+          end_time: stop_time_update,
+          interaction: data["interaction"],
+          selected_values: data["selectedValues"],
+          commentaire: data["commentaire"],
+          valide: data["valide"],
+          num_video : num_video,
+          dayHour: dayHour,
+          camera: cameraSelect.value
+        },
+        success: function(response) {
+            alert("Données envoyées avec succès");
+            console.log("Réponse du serveur:", response);
+            // Actualiser la page ou afficher un message de réussite, etc.
+        },
+        error: function(xhr, status, error) {
+            alert("Échec de l'envoi des données");
+            console.error("Erreur lors de l'envoi des données:", error);
+            // Afficher un message d'erreur à l'utilisateur, etc.
+        }
+    });
+  });
   }
+
+  
+
 
   // Bouton affichage créer
   document
@@ -445,6 +512,8 @@ $(document).ready(function () {
     const day_hour = document.getElementById("day_hour");
     day_hour.textContent = startHour;
 
+    const num_video = document.getElementById("num_video");
+    num_video.textContent = 1;
     video.play();
     loaded();
 
@@ -484,6 +553,8 @@ $(document).ready(function () {
       const day_hour = document.getElementById("day_hour");
       day_hour.textContent = startHour;
 
+      const num_video = document.getElementById("num_video");
+      num_video.textContent = 2;
 
       if (data2) {
         dessinerBoites(data2, video, ctx);
