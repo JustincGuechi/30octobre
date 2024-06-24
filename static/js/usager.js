@@ -328,12 +328,18 @@ $(document).ready(function () {
         method: "GET",
         data: {
           Id: interactionId,
+          dayHour: dayHour,
+          camera: cameraSelect.value
         },
         success: function (response) {
+          alert("Supprimé avec succès");
+
           console.log("Interaction supprimée avec succès !");
           // Actualiser la page ou afficher un message de réussite, etc.
         },
         error: function (xhr, status, error) {
+          alert("Echec de la suppression");
+
           console.error(
             "Erreur lors de la suppression de l'interaction :",
             error

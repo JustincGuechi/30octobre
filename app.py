@@ -482,30 +482,101 @@ def get_interactions2():
 def delete_interaction():
     if not session.get('logged_in'):
         return redirect(url_for('login'))
-    urlVideoInteraction = request.args.get('urlVideoInteraction')
-    # Récupérer l'ID de l'interaction à supprimer depuis les paramètres de la requête
+   
+    camera = request.args.get('camera')
+    dayHour = request.args.get('dayHour')
+    if not camera or not dayHour:
+        return "Camera or dayHour parameter is missing", 400
+ 
+    # Extraction de l'heure de début de l'intervalle
+    # Extraction de l'heure de début de l'intervalle
+    dayHour_split = dayHour.split("_")
+    dayHour_prefix = "_".join(dayHour_split[:4]) + "_"
+ 
+    # Extraire l'heure, la convertir en entier et lui soustraire 1
+    hour_str = dayHour_split[3]
+    hour_int = int(hour_str)
+ 
+    # Formater l'heure modifiée avec un zéro devant si nécessaire
+    if len(str(hour_int)) == 1:
+        nvhour_int = "0" + str(hour_int)
+    else:
+        nvhour_int = str(hour_int)
+ 
+    # Mettre à jour le dayHour_split avec la nouvelle heure
+    dayHour_split[3] = nvhour_int
+ 
+    dayHour_avant = "_".join(dayHour_split[:4]) + "_"
+    nameprefix = find_video_file_json(camera, dayHour_avant)
+    nameprefix = os.path.splitext(nameprefix)[0]
+    json_file_path1 = os.path.join(f"{nameprefix}.json")
+    print(json_file_path1)
+    if os.path.exists(json_file_path1):
+        with open(json_file_path1, 'r') as f:
+            data1 = json.load(f)  # Charge les données JSON depuis le fichier
+
+    camera = request.args.get('camera')
+    dayHour = request.args.get('dayHour')
+    if not camera or not dayHour:
+        return "Camera or dayHour parameter is missing", 400
+ 
+    # Extraction de l'heure de début de l'intervalle
+    # Extraction de l'heure de début de l'intervalle
+    dayHour_split = dayHour.split("_")
+    dayHour_prefix = "_".join(dayHour_split[:4]) + "_"
+ 
+    # Extraire l'heure, la convertir en entier et lui soustraire 1
+    hour_str = dayHour_split[3]
+    hour_int = int(hour_str) - 1
+ 
+    # Formater l'heure modifiée avec un zéro devant si nécessaire
+    if len(str(hour_int)) == 1:
+        nvhour_int = "0" + str(hour_int)
+    else:
+        nvhour_int = str(hour_int)
+ 
+    # Mettre à jour le dayHour_split avec la nouvelle heure
+    dayHour_split[3] = nvhour_int
+ 
+    dayHour_avant = "_".join(dayHour_split[:4]) + "_"
+    nameprefix = find_video_file_json(camera, dayHour_avant)
+    nameprefix = os.path.splitext(nameprefix)[0]
+    json_file_path = os.path.join(f"{nameprefix}_geo_interactions.json")
+    print(json_file_path)
+    if os.path.exists(json_file_path):
+        with open(json_file_path, 'r') as f:
+            data = json.load(f)  # Charge les données JSON depuis le fichier
+    
     interaction_id = request.args.get('Id')
-
-    # Charger le contenu du fichier JSON contenant les données d'interaction
-    with open(urlVideoInteraction, 'r') as file:
-        data = json.load(file)
-
-    # Rechercher et supprimer l'interaction correspondante dans les données
-    for interaction in data['Data']:
-        if interaction['ID'] == interaction_id:
-            data['Data'].remove(interaction)
+   
+    # Mettre à jour les données appropriées
+    interaction_found = False
+    for interaction in data:
+        if interaction['id_interaction'] == interaction_id:
+            data.remove(interaction)
+            interaction_found = True
             break
-
-    # Écrire les données mises à jour dans le fichier JSON
-    with open(urlVideoInteraction, 'w') as file:
+    for interaction in data1:
+        if interaction['id_interaction'] == interaction_id:
+            data1.remove(interaction)
+            interaction_found = True
+            break
+ 
+    if not interaction_found:
+        app.logger.error("Interaction ID not found")
+        return jsonify({"error": "Interaction ID not found"}), 404
+ 
+   
+     # Écrire les données mises à jour dans le fichier JSON
+    with open(json_file_path, 'w') as file:
         json.dump(data, file, indent=4)
 
-    # Afficher un message dans la console pour indiquer que l'interaction a été supprimée avec succès
-    print("Interaction ID:", interaction_id, "supprimée avec succès")
+   # Écrire les données mises à jour dans le fichier JSON
+    with open(json_file_path1, 'w') as file:
+        json.dump(data1, file, indent=4)
 
     # Retourner une réponse indiquant que l'interaction a été supprimée avec succès
     return 'Interaction ID {} supprimée avec succès !'.format(interaction_id)
-
 
 @app.route('/create_interaction', methods=['POST'])
 def create_interaction():
@@ -522,6 +593,8 @@ def create_interaction():
     interaction = interaction_data.get('Interaction')
     commentaire = interaction_data.get('Commentaire')
     valide = interaction_data.get('Valide')
+
+
 
     # Initialiser la liste des usagers
     # Traiter les données pour créer une nouvelle interactio
