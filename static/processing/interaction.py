@@ -3,21 +3,23 @@ from shapely.geometry import Point, Polygon
 import tqdm
 import os
 import sys
+import uuid
+
 
 def found_interaction(list_user, list_zone, authorised_zone):
     interactions = []
     print("Recherche des interactions de position...")
     for user in tqdm.tqdm(list_user):
+        if 'ID2' not in user:
+            user["ID2"] = str(uuid.uuid4())
+
         for zone, area in list_zone:
             if len(area[0]) == 2:
-                # Récupérer les coordonnées du contour extérieur et intérieur
                 polygon_ext_coords = area[0]['ext']
                 polygon_int_coords = area[0]['int']
-                
-                # Créer les objets Polygon
                 polygon_ext = Polygon(polygon_ext_coords)
                 polygon_int = Polygon(polygon_int_coords)
-
+                
                 interaction_started = False
                 start_time = None
                 end_time = None
@@ -27,46 +29,53 @@ def found_interaction(list_user, list_zone, authorised_zone):
                         try:
                             point = Point(data["lat"], data["lon"])
                             if polygon_ext.contains(point) and not polygon_int.contains(point):
-                                auth_polygon = Polygon(auth_area[0])
-                                if not auth_polygon.contains(point):
-                                    if not interaction_started:
-                                        start_time = user["Time_code_debut"]
-                                        interaction_started = True
-                                    end_time = user["Time_code_fin"]
+                                for auth_zone, auth_area in authorised_zone:
+                                    auth_polygon = Polygon(auth_area[0])
+                                    if not auth_polygon.contains(point):
+                                        if not interaction_started:
+                                            start_time = data["time"]
+                                            interaction_started = True
+                                        end_time = data["time"]
+                                        break
                                 else:
                                     if interaction_started:
+                                        duration = end_time - start_time
+                                        interaction_type = determine_interaction_type(duration)
                                         interactions.append({
-                                                "user": user['Usager'],
-                                                # genere un id unique pour chaque interaction
-                                                "id_interaction": str(user['ID']) + user['ID2'],
-                                                "id": [user['ID2']],
-                                                "interaction": "zone",
-                                                "zone": zone,
-                                                "start_time": start_time,
-                                                "end_time": end_time,
-                                                "commentaire":"",
-                                                "valide": False
-                                            })
+                                            "user": user['Usager'],
+                                            "id_interaction": str(user['ID']) + user['ID2'],
+                                            "id": [user['ID2']],
+                                            "interaction": interaction_type,
+                                            "zone": zone,
+                                            "start_time": start_time,
+                                            "end_time": end_time,
+                                            "commentaire": "",
+                                            "valide": False
+                                        })
                                         interaction_started = False
+                                        start_time = None
+                                        end_time = None
                         except ValueError as e:
                             print(f"Invalid polygon or point coordinates 1 {zone}: {e}")
 
                 if interaction_started:
+                    duration = end_time - start_time
+                    interaction_type = determine_interaction_type(duration)
                     interactions.append({
                         "user": user['Usager'],
                         "id_interaction": str(user['ID']) + user['ID2'],
                         "id": [user['ID2']],
-                        "interaction": "zone",
+                        "interaction": interaction_type,
                         "zone": zone,
                         "start_time": start_time,
                         "end_time": end_time,
-                        "commentaire":"",
+                        "commentaire": "",
                         "valide": False
                     })
 
             else:
                 polygon = Polygon(area[0])
-
+                
                 interaction_started = False
                 start_time = None
                 end_time = None
@@ -80,40 +89,55 @@ def found_interaction(list_user, list_zone, authorised_zone):
                                     auth_polygon = Polygon(auth_area[0])
                                     if not auth_polygon.contains(point):
                                         if not interaction_started:
-                                            start_time = user["Time_code_debut"]
+                                            start_time = data["time"]
                                             interaction_started = True
-                                        end_time = user["Time_code_fin"]
-                                    else:
-                                        if interaction_started:
-                                            interactions.append({
-                                                "user": user['Usager'],
-                                                "id_interaction": str(user['ID']) + user['ID2'],
-                                                "id": [user['ID2']],
-                                                "interaction": "zone",
-                                                "zone": zone,
-                                                "start_time": start_time,
-                                                "end_time": end_time,
-                                                "commentaire":"",
-                                                "valide": False
-                                            })
-                                            interaction_started = False
+                                        end_time = data["time"]
+                                        break
+                                else:
+                                    if interaction_started:
+                                        duration = end_time - start_time
+                                        interaction_type = determine_interaction_type(duration)
+                                        interactions.append({
+                                            "user": user['Usager'],
+                                            "id_interaction": str(user['ID']) + user['ID2'],
+                                            "id": [user['ID2']],
+                                            "interaction": interaction_type,
+                                            "zone": zone,
+                                            "start_time": start_time,
+                                            "end_time": end_time,
+                                            "commentaire": "",
+                                            "valide": False
+                                        })
+                                        interaction_started = False
+                                        start_time = None
+                                        end_time = None
                         except ValueError as e:
                             print(f"Invalid polygon or point coordinates 2 {zone}: {e}")
 
                 if interaction_started:
+                    duration = end_time - start_time
+                    interaction_type = determine_interaction_type(duration)
                     interactions.append({
                         "user": user['Usager'],
                         "id_interaction": str(user['ID']) + user['ID2'],
                         "id": [user['ID2']],
-                        "interaction": "zone",
+                        "interaction": interaction_type,
                         "zone": zone,
                         "start_time": start_time,
                         "end_time": end_time,
-                        "commentaire":"",
+                        "commentaire": "",
                         "valide": False
                     })
-    # return the list of interactions but only distinct ones
-    return list({v['start_time']: v for v in interactions}.values())
+
+    return interactions
+
+def determine_interaction_type(duration):
+    if duration < 60:
+        return "Franchissement de ligne cours"
+    elif duration < 300:
+        return "Franchissement de ligne long"
+    else:
+        return "Autre"
 
 def process_interactions(chemin_user, chemin_zone):
     # Ouvrir le fichier JSON
@@ -124,7 +148,7 @@ def process_interactions(chemin_user, chemin_zone):
     with open(chemin_zone) as fichier:
         zone = json.load(fichier)
 
-    personn = ["road", "cycle_path", "bus"]
+    personn = ["road", "cycle_path", "bus", "bus_road_Carnot"]
     car = motocycle = ["cycle_path", "bus", "sidewalk"]
     bicyle = ["bus", "sidewalk"]
     bus = ["cycle_path", "sidewalk"]
@@ -197,9 +221,6 @@ def process_interactions(chemin_user, chemin_zone):
     link = chemin_user.split(".")[0] + "_interactions.json"
     with open(link, 'w') as fichier:
         json.dump(interactions, fichier, indent=4)
-
-    # for interaction in interactions:
-    #     print(f"Interaction entre {interaction['user']} (ID: {interaction['id']}) et {interaction['zone']} de {interaction['start_time']} à {interaction['end_time']}")
 
 def process_all_interactions(directory):
     for filename in os.listdir(directory):
