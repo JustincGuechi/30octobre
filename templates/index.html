@@ -92,14 +92,11 @@
                 <li class="time-code-fin-type">Time-Code Fin: <input type="text" name="newend_time" value=""></li>
                 <li class="interaction-type">Interaction: <input type="text" name="newinteraction" value=""></li>
                 <li class="usager-1">Usager 1: </li>
-                <div id="list3" class="dropdown-check-list" tabindex="100" style="overflow-y: scroll; max-height: 200px;">
-                    <input type="text" class="anchor3" placeholder="Usagers">
-                    <ul id="items" class="items">
-                        <!-- Les éléments de la liste seront ajoutés ici par JavaScript -->
-                    </ul>
-                </div>
-                <li class="commentaire-type">Commentaire: <input type="text" name="newcommentaire" value=""></li>
-                <li class="statut-type">Validé: <input type="checkbox" name="newvalide" value="false"></li>
+                <select id="userIDSelect">
+                    <option value="">Tous les ID</option>
+                </select>
+                <li class="commentaire-type">Commentaire: <input type="text" name="commentaire" value=""></li>
+                <li class="statut-type">Validé: <input type="text" name="statut" value=""></li>
                 <button type="button" class="creer-btn">Créer</button>
             </div>
         </form>
