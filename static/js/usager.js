@@ -39,6 +39,17 @@ $(document).ready(function () {
     //filterAndRenderInteractions('', '');
   }
 
+  function afficherID(userData) {
+    // Création des options du menu déroulant pour les utilisateurs
+    var utilisateurs = {};
+    userData.forEach(function (obj) {
+      if (!utilisateurs[obj.Usager]) {
+        utilisateurs[obj.Usager] = true;
+        $('#userIDSelect').append('<option value="' + obj.ID + '">' + obj.ID + '</option>');
+      }
+    });
+  }
+
   // Chargement des interactions depuis l'API Flask
   async function affichage_interaction_avec_data(response, data_minute_sec) {
     interactionData = response; // Assignation des données à la variable interactionData
@@ -426,6 +437,7 @@ $(document).ready(function () {
 
     if (data_usager1) {
       afficherUsagers(data_usager1);
+      afficherID(data_usager1);
     }
 
     if (data_interaction1) {
@@ -463,7 +475,7 @@ $(document).ready(function () {
 
       if (data_usager2) {
         afficherUsagers(data_usager2);
-
+        afficherID(data_usager2);
       }
 
       const url_interaction2 = `/get_interactions2?camera=${camera}&dayHour=${dayHour}`;
