@@ -166,7 +166,7 @@ $(document).ready(function () {
         '"></li>';
       interactionsHtml +=
         '<li class="interaction-comment">Commentaire: <input type="text" name="commentaire" value="' +
-        (obj.Commentaire || "") +
+        (obj.commentaire || "") +
         '"></li>';
         if(obj.valide == "Valide"){
           var valide = "Validé";
@@ -238,10 +238,13 @@ $(document).ready(function () {
           dayHour: dayHour
         },
         success: function (response) {
+          alert("Validé avec succès");
           console.log("Statut mis à jour avec succès !");
           // Actualiser la page ou afficher un message de réussite, etc.
         },
         error: function (xhr, status, error) {
+          alert("Echec de la validation");
+
           console.error("Erreur lors de la mise à jour du statut :", error);
           console.error("Status:", status);
           console.error("Response text:", xhr.responseText);
@@ -276,9 +279,7 @@ $(document).ready(function () {
       start_time_update = parseInt(timecode[0]) * 3600 + parseInt(timecode[1]) * 60 + parseInt(timecode[2]) - time;
       timecode = interactionToUpdate.Time_code_fin.split(":");
       stop_time_update = parseInt(timecode[0]) * 3600 + parseInt(timecode[1]) * 60 + parseInt(timecode[2]) - time;
-      console.log("start time :",start_time_update);
-      console.log("stop time :",stop_time_update);
-      console.log("dayHour fdp :",dayHour);
+     
 
       const day_hour = document.getElementById("day_hour");
       var heureActuelleFormatted = parseInt(day_hour.textContent)// Ajoute un zéro devant si nécessaire et prend les deux derniers chiffres
@@ -301,10 +302,12 @@ $(document).ready(function () {
           statut: interactionToUpdate.Validé,
         },
         success: function (response) {
+          alert("Modifier avec succès");
           console.log("Données mises à jour avec succès !");
           // Actualiser la page ou afficher un message de réussite, etc.
         },
         error: function (xhr, status, error) {
+          alert("echec de la modification");
           console.error("Erreur lors de la mise à jour des données :", error);
           // Afficher un message d'erreur à l'utilisateur, etc.
         },

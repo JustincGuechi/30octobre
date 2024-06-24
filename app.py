@@ -159,13 +159,12 @@ def update_interaction_valider():
     dayHour_split[3] = nvhour_int
  
     dayHour_avant = "_".join(dayHour_split[:4]) + "_"
-    print(dayHour_avant)
     nameprefix = find_video_file_json(camera, dayHour_avant)
-    print(nameprefix)
     nameprefix = os.path.splitext(nameprefix)[0]
-    json_file_path = os.path.join(f"{nameprefix}_geo_interactions.json")
-    if os.path.exists(json_file_path):
-        with open(json_file_path, 'r') as f:
+    json_file_path1 = os.path.join(f"{nameprefix}.json")
+    print(json_file_path1)
+    if os.path.exists(json_file_path1):
+        with open(json_file_path1, 'r') as f:
             data1 = json.load(f)  # Charge les données JSON depuis le fichier
 
     camera = request.args.get('camera')
@@ -192,36 +191,44 @@ def update_interaction_valider():
     dayHour_split[3] = nvhour_int
  
     dayHour_avant = "_".join(dayHour_split[:4]) + "_"
-    print(dayHour_avant)
     nameprefix = find_video_file_json(camera, dayHour_avant)
-    print(nameprefix)
     nameprefix = os.path.splitext(nameprefix)[0]
     json_file_path = os.path.join(f"{nameprefix}_geo_interactions.json")
+    print(json_file_path)
     if os.path.exists(json_file_path):
         with open(json_file_path, 'r') as f:
             data = json.load(f)  # Charge les données JSON depuis le fichier
     
     interaction_id = request.args.get('Id')
     valide = request.args.get('statut')
-
-    
-    # Mettre à jour les données appropriées
     interaction_found = False
-    for interaction in data:
-        if interaction['id_interaction'] == interaction_id:
-            interaction['valide'] = valide
-            interaction_found = True
-            break
+
     for interaction in data1:
         if interaction['id_interaction'] == interaction_id:
             interaction['valide'] = valide
             interaction_found = True
             break
+
+    # Mettre à jour les données appropriées
+    for interaction in data:
+        if interaction['id_interaction'] == interaction_id:
+            interaction['valide'] = valide
+            interaction_found = True
+            break
+    
         
     if not interaction_found:
         app.logger.error("Interaction ID not found")
         return jsonify({"error": "Interaction ID not found"}), 404
 
+    # Écrire les données mises à jour dans le fichier JSON
+    try:
+        with open(json_file_path1, 'w') as file:
+            json.dump(data1, file, indent=1)
+    except IOError:
+        app.logger.error(f"Error writing JSON to file {json_file_path1}")
+        return jsonify({"error": f"Error writing JSON to file {json_file_path1}"}), 500
+    
     # Écrire les données mises à jour dans le fichier JSON
     try:
         with open(json_file_path, 'w') as file:
@@ -251,13 +258,11 @@ def update_interaction():
     # Extraction de l'heure de début de l'intervalle
     dayHour_split = dayHour.split("_")
     dayHour_prefix = "_".join(dayHour_split[:4]) + "_"
-    
+ 
     # Extraire l'heure, la convertir en entier et lui soustraire 1
     hour_str = dayHour_split[3]
-    hour_int = int(hour_str) - 1
-    hour_verif = request.args.get('hour')
-    if hour_int != int(hour_verif)-1:
-        hour_int = hour_int + 1
+    hour_int = int(hour_str)
+ 
     # Formater l'heure modifiée avec un zéro devant si nécessaire
     if len(str(hour_int)) == 1:
         nvhour_int = "0" + str(hour_int)
@@ -268,14 +273,46 @@ def update_interaction():
     dayHour_split[3] = nvhour_int
  
     dayHour_avant = "_".join(dayHour_split[:4]) + "_"
+    nameprefix = find_video_file_json(camera, dayHour_avant)
+    nameprefix = os.path.splitext(nameprefix)[0]
+    json_file_path1 = os.path.join(f"{nameprefix}.json")
+    print(json_file_path1)
+    if os.path.exists(json_file_path1):
+        with open(json_file_path1, 'r') as f:
+            data1 = json.load(f)  # Charge les données JSON depuis le fichier
+
+    camera = request.args.get('camera')
+    dayHour = request.args.get('dayHour')
+    if not camera or not dayHour:
+        return "Camera or dayHour parameter is missing", 400
  
+    # Extraction de l'heure de début de l'intervalle
+    # Extraction de l'heure de début de l'intervalle
+    dayHour_split = dayHour.split("_")
+    dayHour_prefix = "_".join(dayHour_split[:4]) + "_"
+ 
+    # Extraire l'heure, la convertir en entier et lui soustraire 1
+    hour_str = dayHour_split[3]
+    hour_int = int(hour_str) - 1
+ 
+    # Formater l'heure modifiée avec un zéro devant si nécessaire
+    if len(str(hour_int)) == 1:
+        nvhour_int = "0" + str(hour_int)
+    else:
+        nvhour_int = str(hour_int)
+ 
+    # Mettre à jour le dayHour_split avec la nouvelle heure
+    dayHour_split[3] = nvhour_int
+ 
+    dayHour_avant = "_".join(dayHour_split[:4]) + "_"
     nameprefix = find_video_file_json(camera, dayHour_avant)
     nameprefix = os.path.splitext(nameprefix)[0]
     json_file_path = os.path.join(f"{nameprefix}_geo_interactions.json")
+    print(json_file_path)
     if os.path.exists(json_file_path):
         with open(json_file_path, 'r') as f:
             data = json.load(f)  # Charge les données JSON depuis le fichier
-
+    
 
     # Traiter les données
     interaction_id = request.args.get('Id')
@@ -294,10 +331,22 @@ def update_interaction():
             interaction['end_time'] = interaction_time_code_fin
             interaction['commentaire'] = commentaire
             break
+    # Mettre à jour les données appropriées
+    for interaction in data1:
+        if interaction['id_interaction'] == interaction_id:
+            interaction['interaction'] = interaction_type
+            interaction['start_time'] = interaction_time_code_debut
+            interaction['end_time'] = interaction_time_code_fin
+            interaction['commentaire'] = commentaire
+            break
 
     # Écrire les données mises à jour dans le fichier JSON
     with open(json_file_path, 'w') as file:
         json.dump(data, file, indent=4)
+
+   # Écrire les données mises à jour dans le fichier JSON
+    with open(json_file_path1, 'w') as file:
+        json.dump(data1, file, indent=4)
 
     # Exemple de traitement de données - Affichage dans la console
     print("ID:", interaction_id)
