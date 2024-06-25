@@ -105,6 +105,24 @@ def get_json_for_plan():
                     matched_files.append({"Time_code_debut": timedebutseconde, "data": data})
                 except json.JSONDecodeError:
                     return jsonify({"error": f"Error decoding JSON in file {filename}"}), 500
+     # Ajout de zéro devant les heures de 0 à 9 pour correspondre au format hh
+    hour_str = f"{(hour+1):02}"
+
+    # Pattern pour matcher les fichiers
+    pattern = re.compile(r'^[^_]+_[^_]+_\d{4}_\d{2}_' + re.escape(day) + r'_' + re.escape(hour_str) + r'_\d{2}_\d{2}_user_geo\.json$')
+
+    # Parcours des fichiers dans le dossier
+    for filename in os.listdir(JSON_FILES_DIRECTORY):
+        if pattern.match(filename):
+            file_path = os.path.join(JSON_FILES_DIRECTORY, filename)
+            with open(file_path, 'r') as file:
+                try:
+                    data = json.load(file)
+                    # Ajout du nom du fichier avec les données JSON
+                    timedebutseconde = int(filename.split("_")[5])*3600 + int(filename.split("_")[6])*60 + int(filename.split("_")[7])
+                    matched_files.append({"Time_code_debut": timedebutseconde, "data": data})
+                except json.JSONDecodeError:
+                    return jsonify({"error": f"Error decoding JSON in file {filename}"}), 500
     return jsonify(matched_files)
 
 @app.route('/statistiques')
@@ -221,14 +239,14 @@ def update_interaction_valider():
     interaction_found = False
 
     for interaction in data1:
-        if interaction['id_interaction'] == interaction_id:
+        if interaction.get('id_interaction') == interaction_id:
             interaction['valide'] = valide
             interaction_found = True
             break
 
     # Mettre à jour les données appropriées
     for interaction in data:
-        if interaction['id_interaction'] == interaction_id:
+        if interaction.get('id_interaction') == interaction_id:
             interaction['valide'] = valide
             interaction_found = True
             break
@@ -338,23 +356,24 @@ def update_interaction():
     commentaire = request.args.get('commentaire')
     valide = request.args.get('statut')
 
-
     # Mettre à jour les données appropriées
-    for interaction in data:
-        if interaction['id_interaction'] == interaction_id:
-            interaction['interaction'] = interaction_type
-            interaction['start_time'] = int(interaction_time_code_debut)
-            interaction['end_time'] = int(interaction_time_code_fin)
-            interaction['commentaire'] = commentaire
-            break
+    if(data and len(data) > 0) :
+        for interaction in data:
+            if interaction.get('id_interaction') == interaction_id:
+                interaction['interaction'] = interaction_type
+                interaction['start_time'] = int(interaction_time_code_debut)
+                interaction['end_time'] = int(interaction_time_code_fin)
+                interaction['commentaire'] = commentaire
+                break
     # Mettre à jour les données appropriées
-    for interaction in data1:
-        if interaction['id_interaction'] == interaction_id:
-            interaction['interaction'] = interaction_type
-            interaction['start_time'] = int(interaction_time_code_debut)
-            interaction['end_time'] = int(interaction_time_code_fin)
-            interaction['commentaire'] = commentaire
-            break
+    if(data1 and len(data1) > 0) :
+        for interaction in data1:
+            if interaction.get('id_interaction') == interaction_id:
+                interaction['interaction'] = interaction_type
+                interaction['start_time'] = int(interaction_time_code_debut)
+                interaction['end_time'] = int(interaction_time_code_fin)
+                interaction['commentaire'] = commentaire
+                break
 
     # Écrire les données mises à jour dans le fichier JSON
     with open(json_file_path, 'w') as file:
@@ -561,12 +580,12 @@ def delete_interaction():
     # Mettre à jour les données appropriées
     interaction_found = False
     for interaction in data:
-        if interaction['id_interaction'] == interaction_id:
+        if interaction.get('id_interaction') == interaction_id:
             data.remove(interaction)
             interaction_found = True
             break
     for interaction in data1:
-        if interaction['id_interaction'] == interaction_id:
+        if interaction.get('id_interaction') == interaction_id:
             data1.remove(interaction)
             interaction_found = True
             break
