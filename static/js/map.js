@@ -60,8 +60,8 @@ function floatsAreClose(a, b, epsilon = 1) {
 function dessinerPoints(data, elapsedTime) {
     const canvas = document.getElementById('canvas_plan');
     const ctx = canvas.getContext('2d');
-    canvas.width = 1105;
-    canvas.height = 837;
+    canvas.width = 992;
+    canvas.height = 921;
 
     // Effacer le canvas avant de dessiner
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -71,7 +71,7 @@ function dessinerPoints(data, elapsedTime) {
     ctx.fillStyle = 'red';
     ctx.textAlign = 'left';
     ctx.textBaseline = 'top';
-    ctx.fillText('Omographie', 10, 10);
+    ctx.fillText('Reproduction dans la vie réel active', 10, 10);
 
     // Fonction pour dessiner un point sur le canvas
     function drawPoint(x, y, color) {

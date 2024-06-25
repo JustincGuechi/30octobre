@@ -119,8 +119,8 @@ $('#userIDSelect').empty();
     time = parseInt(data_minute_sec["minutes"]) * 60 + parseInt(data_minute_sec["seconds"]) + hour * 3600;
     var interactionsHtml = "<h2>Interactions filtrées</h2>";
     data.forEach(function (obj) {
-      timeobjstart = obj.start_time + time;
-      timeobjstop = obj.end_time + time;
+      timeobjstart = obj.start_time/1000 + time;
+      timeobjstop = obj.end_time/1000 + time;
 
       // Calculer heures, minutes, et secondes
       var hours1 = Math.floor(timeobjstart / 3600);
@@ -309,8 +309,8 @@ $('#userIDSelect').empty();
           dayHour: dayHour,
           camera: cameraSelect.value,
           Id: interactionId,
-          Time_code_debut: start_time_update,
-          Time_code_fin: stop_time_update,
+          Time_code_debut: start_time_update*1000,
+          Time_code_fin: stop_time_update*1000,
           interaction: interactionToUpdate.Interaction,
           commentaire: interactionToUpdate.Commentaire,
           statut: interactionToUpdate.Validé,
