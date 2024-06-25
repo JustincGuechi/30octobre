@@ -494,7 +494,7 @@ function filterAndRenderInteractions(userType, interactionType, data_minute_sec)
       afficherUsagers(data_usager1);
       afficherID(data_usager1);
     }
-
+    console.log("data_interaction1", data_interaction1);
     if (data_interaction1) {
       affichage_interaction_avec_data(data_interaction1, data_minute_sec);
     }
@@ -537,6 +537,7 @@ function filterAndRenderInteractions(userType, interactionType, data_minute_sec)
 
       const url_interaction2 = `/get_interactions2?camera=${camera}&dayHour=${dayHour}`;
       const data_interaction2 = await chargerDonneesJson(url_interaction2);
+      console.log("data_interaction2", data_interaction2);
       if (data_interaction2) {
         affichage_interaction_avec_data(data_interaction2, data_minute_sec);
 

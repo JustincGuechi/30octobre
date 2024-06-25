@@ -500,7 +500,7 @@ def get_interactions2():
  
     nameprefix = find_video_file_json(camera, dayHour_prefix)
     nameprefix = os.path.splitext(nameprefix)[0]
-    json_file_path = os.path.join(f"{nameprefix}.json")
+    json_file_path = os.path.join(f"{nameprefix}_geo_interactions.json")
     if os.path.exists(json_file_path):
         with open(json_file_path, 'r') as f:
             data = json.load(f)  # Charge les données JSON depuis le fichier
