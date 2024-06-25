@@ -20,6 +20,7 @@ $(document).ready(function () {
   
 
   function afficherUsagers(userData) {
+
     // Création des options du menu déroulant pour les utilisateurs
     var utilisateurs = {};
     userData.forEach(function (obj) {
@@ -53,11 +54,16 @@ $('#userIDSelect').empty();
   }
 
   // Chargement des interactions depuis l'API Flask
- async function affichage_interaction_avec_data(response, data_minute_sec) {
-    console.log("date_time_minute : ", data_minute_sec);
+async function affichage_interaction_avec_data(response, data_minute_sec) {
+    // Réinitialiser le menu déroulant des interactions
+    $('#interactionSelect').empty();
+
     interactionData = response; // Assignation des données à la variable interactionData
 
-    // Création des options du menu déroulant pour les interactions
+    // Création de l'option "Toutes les interactions"
+    $('#interactionSelect').append('<option value="">Toutes les interactions</option>');
+
+    // Création des autres options du menu déroulant pour les interactions
     var interactions = {};
     interactionData.forEach(function (obj) {
         if (!interactions[obj.interaction]) {
@@ -67,7 +73,7 @@ $('#userIDSelect').empty();
     });
 
     // Gestionnaire d'événement pour le changement de sélection dans le menu déroulant des interactions
-    $('#interactionSelect').change(function () {
+    $('#interactionSelect').off('change').on('change', function () {
         var selectedInteraction = $(this).val();
         var selectedUsager = $('#userTypeSelect').val();
         filterAndRenderInteractions(selectedUsager, selectedInteraction, data_minute_sec);
@@ -76,6 +82,7 @@ $('#userIDSelect').empty();
     // Affichage initial des interactions avec tous les time_codes
     renderFilteredInteractions(interactionData, data_minute_sec);
 };
+
 
   // Fonction pour filtrer les interactions en fonction des utilisateurs et des interactions sélectionnés
 function filterAndRenderInteractions(userType, interactionType, data_minute_sec) {
