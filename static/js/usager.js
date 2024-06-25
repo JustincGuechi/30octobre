@@ -48,60 +48,47 @@ $('#userIDSelect').empty();
 
         utilisateurs[obj.Usager] = true;
         $('#userIDSelect').append('<option value="' + obj.ID + '">' + obj.ID + '</option>');
-      
+
     });
   }
 
   // Chargement des interactions depuis l'API Flask
-  async function affichage_interaction_avec_data(response, data_minute_sec) {
+ async function affichage_interaction_avec_data(response, data_minute_sec) {
+    console.log("date_time_minute : ", data_minute_sec);
     interactionData = response; // Assignation des données à la variable interactionData
-    //console.log("get interaction", userData);
+
     // Création des options du menu déroulant pour les interactions
     var interactions = {};
     interactionData.forEach(function (obj) {
-      if (!interactions[obj.Interaction]) {
-        interactions[obj.Interaction] = true;
-        $('#interactionSelect').append('<option value="' + obj.Interaction + '">' + obj.Interaction +'</option>');
-      }
+        if (!interactions[obj.interaction]) {
+            interactions[obj.interaction] = true;
+            $('#interactionSelect').append('<option value="' + obj.interaction + '">' + obj.interaction + '</option>');
+        }
     });
 
     // Gestionnaire d'événement pour le changement de sélection dans le menu déroulant des interactions
     $('#interactionSelect').change(function () {
-      var selectedInteraction = $(this).val();
-      var selectedUsager = $('#userTypeSelect').val();
-      filterAndRenderInteractions(selectedUsager, selectedInteraction, data_minute_sec);
+        var selectedInteraction = $(this).val();
+        var selectedUsager = $('#userTypeSelect').val();
+        filterAndRenderInteractions(selectedUsager, selectedInteraction, data_minute_sec);
     });
 
     // Affichage initial des interactions avec tous les time_codes
     renderFilteredInteractions(interactionData, data_minute_sec);
-  };
+};
 
   // Fonction pour filtrer les interactions en fonction des utilisateurs et des interactions sélectionnés
-  function filterAndRenderInteractions(usager, interaction, data_minute_sec) {
-    var filteredData = interactionData;
+function filterAndRenderInteractions(userType, interactionType, data_minute_sec) {
+    console.log("Filtering interactions for user type:", userType, "and interaction type:", interactionType);
 
-    // Filtrer par usager si un usager est sélectionné
-    if (usager !== "") {
-      filteredData = filteredData.filter(function (obj) {
-        // Vérifier si l'usager sélectionné est présent dans la liste des usagers de l'interaction
-        return obj.User.some(function (user) {
-          var userObj = userData.find(function (u) {
-            return u.ID === user.ID_usager;
-          });
-          return userObj && userObj.Usager === usager;
-        });
-      });
-    }
-
-    // Filtrer par interaction si une interaction est sélectionnée
-    if (interaction !== "") {
-      filteredData = filteredData.filter(function (obj) {
-        return obj.Interaction === interaction;
-      });
-    }
+    var filteredData = interactionData.filter(function (obj) {
+        return (obj.interaction === interactionType || !interactionType) &&
+               (obj.id.includes(userType) || !userType);
+    });
 
     renderFilteredInteractions(filteredData, data_minute_sec);
-  }
+}
+
 
   // Fonction pour afficher les interactions filtrées en fonction de l'interaction sélectionnée
   function renderFilteredInteractions(data, data_minute_sec) {
@@ -171,7 +158,7 @@ $('#userIDSelect').empty();
         '"></li>';
       interactionsHtml +=
         '<li class="time-code-fin-time">Heure de fin: <input type="text" name="time-code-fin" value="' +
-        hoursFormatted + ":" + minutesFormatted + ":" + secondsFormatted + 
+        hoursFormatted + ":" + minutesFormatted + ":" + secondsFormatted +
         '"></li>';
       interactionsHtml +=
         '<li class="interaction-type">Interaction: <input type="text" name="interaction" value="' +
@@ -232,14 +219,14 @@ $('#userIDSelect').empty();
 
     $(".valid-btn").click(function () {
       console.log("Valide button clicked");
-      
+
       // Récupérer l'ID de l'interaction à partir de l'attribut data
       var interactionId = $(this)
         .closest(".interaction-container")
         .find(".time-code")
         .data("index");
-  
-    
+
+
       // Modifier le statut de l'interaction à "Valide"
       $.ajax({
         url: "/update_interaction_valider",
