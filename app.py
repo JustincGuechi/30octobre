@@ -357,7 +357,7 @@ def update_interaction():
     interaction_type = request.args.get('interaction')
     commentaire = request.args.get('commentaire')
     valide = request.args.get('statut')
-
+    interaction_found = False
     # Mettre à jour les données appropriées
     if(data and len(data) > 0) :
         for interaction in data:
@@ -366,16 +366,18 @@ def update_interaction():
                 interaction['start_time'] = int(interaction_time_code_debut)
                 interaction['end_time'] = int(interaction_time_code_fin)
                 interaction['commentaire'] = commentaire
+                interaction_found = False
                 break
     # Mettre à jour les données appropriées
-    if(data1 and len(data1) > 0) :
-        for interaction in data1:
-            if interaction.get('id_interaction') == interaction_id:
-                interaction['interaction'] = interaction_type
-                interaction['start_time'] = int(interaction_time_code_debut)
-                interaction['end_time'] = int(interaction_time_code_fin)
-                interaction['commentaire'] = commentaire
-                break
+    if(interaction_found == False):
+        if(data1 and len(data1) > 0) :
+            for interaction in data1:
+                if interaction.get('id_interaction') == interaction_id:
+                    interaction['interaction'] = interaction_type
+                    interaction['start_time'] = int(interaction_time_code_debut)
+                    interaction['end_time'] = int(interaction_time_code_fin)
+                    interaction['commentaire'] = commentaire
+                    break
 
     # Écrire les données mises à jour dans le fichier JSON
     with open(json_file_path, 'w') as file:
@@ -586,12 +588,13 @@ def delete_interaction():
             data.remove(interaction)
             interaction_found = True
             break
-    for interaction in data1:
-        if interaction.get('id_interaction') == interaction_id:
-            data1.remove(interaction)
-            interaction_found = True
-            break
- 
+    if(interaction_found == False):
+        for interaction in data1:
+            if interaction.get('id_interaction') == interaction_id:
+                data1.remove(interaction)
+                interaction_found = True
+                break
+    
     if not interaction_found:
         app.logger.error("Interaction ID not found")
         return jsonify({"error": "Interaction ID not found"}), 404

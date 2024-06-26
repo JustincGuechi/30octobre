@@ -252,6 +252,7 @@ function filterAndRenderInteractions(userType, interactionType, userData, intera
     });
 
     $(".valid-btn").click(function () {
+      loading_wait();
 
       // Récupérer l'ID de l'interaction à partir de l'attribut data
       var interactionId = $(this)
@@ -271,10 +272,12 @@ function filterAndRenderInteractions(userType, interactionType, userData, intera
           dayHour: dayHour
         },
         success: function (response) {
+          loaded_wait();
           alert("Validé avec succès");
           // Actualiser la page ou afficher un message de réussite, etc.
         },
         error: function (xhr, status, error) {
+          loaded_wait();
           alert("Echec de la validation");
 
           console.error("Erreur lors de la mise à jour du statut :", error);
@@ -289,6 +292,7 @@ function filterAndRenderInteractions(userType, interactionType, userData, intera
 
     // Event listener for modifier button
     $(".modifier-btn").click(function () {
+      loading_wait();
       var interactionId = $(this)
         .closest(".interaction-container")
         .find(".time-code")
@@ -330,10 +334,12 @@ function filterAndRenderInteractions(userType, interactionType, userData, intera
           statut: interactionToUpdate.Validé,
         },
         success: function (response) {
+          loaded_wait();
           alert("Modifier avec succès");
           // Actualiser la page ou afficher un message de réussite, etc.
         },
         error: function (xhr, status, error) {
+          loaded_wait();
           alert("echec de la modification");
           // Afficher un message d'erreur à l'utilisateur, etc.
         },
@@ -342,6 +348,7 @@ function filterAndRenderInteractions(userType, interactionType, userData, intera
 
     // Event listener for supprimer button
     $(".supprimer-btn").click(function () {
+      loading_wait();
       // Récupérer l'ID de l'interaction à partir de l'attribut data
       var interactionId = $(this)
         .closest(".interaction-container")
@@ -358,11 +365,13 @@ function filterAndRenderInteractions(userType, interactionType, userData, intera
           camera: cameraSelect.value
         },
         success: function (response) {
+          loaded_wait();
           alert("Supprimé avec succès");
 
           // Actualiser la page ou afficher un message de réussite, etc.
         },
         error: function (xhr, status, error) {
+          loaded_wait();
           alert("Echec de la suppression");
 
           console.error(
@@ -878,7 +887,17 @@ function filterAndRenderInteractions(userType, interactionType, userData, intera
       modal.style.display = "none"; // hide the modal when clicked outside of it
     }
   };
+  function loading_wait() {
+    // créer un spinner au dessus de la page
+    const spinner = document.getElementById("spinner");
+    spinner.style.display = "block";
+  }
+  function loaded_wait() {
+    // cacher le spinner
+    const spinner = document.getElementById("spinner");
+    spinner.style.display = "none";
 
+  }
   //   mise en place d'un temps de chargement pour attendre le chargement des données
   // il doit desctiver les bouton le temps du chargement et afficher un message de chargement avec un spinner
   // il doit les réactiver une fois les données chargées
