@@ -95,13 +95,16 @@ def found_interaction(list_user, list_zone, authorised_zone):
                     "commentaire": "",
                     "valide": False
                 })
-
+    # retire dans interactions avec interaction = "Faut positif"
+    interactions = [x for x in interactions if x["interaction"] != "Faut positif"]
     return interactions
 
 def determine_interaction_type(duration):
     if duration < 100:
+        return "Faut positif"
+    elif duration < 200:
         return "Franchissement de ligne cours"
-    elif duration < 600:
+    elif duration < 1000:
         return "Franchissement de ligne long"
     else:
         return "Autre"
