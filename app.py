@@ -22,6 +22,8 @@ app.config['SESSION_TYPE'] = 'filesystem'
 
 @app.route('/get_ids', methods=['GET'])
 def get_ids():
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
     camera = request.args.get('camera')
     dayHour = request.args.get('dayHour')
     if not camera or not dayHour:
@@ -79,6 +81,8 @@ JSON_FILES_DIRECTORY = 'static/video/json'
 
 @app.route('/get_json_for_plan', methods=['GET'])
 def get_json_for_plan():
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
     # Récupération des paramètres passés en requête
     hour = request.args.get('hour')
     day = request.args.get('day')
@@ -394,7 +398,8 @@ def update_interaction():
 
 @app.route('/get_usagers1', methods=['GET'])
 def get_usagers1():
-
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
     camera = request.args.get('camera')
     dayHour = request.args.get('dayHour')
     if not camera or not dayHour:
@@ -432,6 +437,8 @@ def get_usagers1():
  
 @app.route('/get_usagers2', methods=['GET'])
 def get_usagers2():
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
     camera = request.args.get('camera')
     dayHour = request.args.get('dayHour')
     if not camera or not dayHour:
@@ -454,7 +461,8 @@ def get_usagers2():
  
 @app.route('/get_interactions1', methods=['GET'])
 def get_interactions1():
-
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
     camera = request.args.get('camera')
     dayHour = request.args.get('dayHour')
     if not camera or not dayHour:
@@ -492,7 +500,8 @@ def get_interactions1():
  
 @app.route('/get_interactions2', methods=['GET'])
 def get_interactions2():
-    
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
     camera = request.args.get('camera')
     dayHour = request.args.get('dayHour')
     if not camera or not dayHour:
@@ -899,6 +908,8 @@ def data2():
 
 @app.route('/get_video_files_btn', methods=['GET'])
 def get_video_files():
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
     camera = request.args.get('camera')
     dayHour_prefix = request.args.get('dayHour_prefix')
 
