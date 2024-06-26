@@ -100,9 +100,9 @@ def found_interaction(list_user, list_zone, authorised_zone):
     return interactions
 
 def determine_interaction_type(duration):
-    if duration < 100:
+    if duration < 150:
         return "Faut positif"
-    elif duration < 200:
+    elif duration < 300:
         return "Franchissement de ligne cours"
     elif duration < 1000:
         return "Franchissement de ligne long"
