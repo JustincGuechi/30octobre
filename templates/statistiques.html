@@ -3,15 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Statistiques de Trafic</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles_stat.css') }}">
+    <title>Statistiques d'Interaction</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
 <body>
-    <h1>Statistiques de Trafic</h1>
-    <img src="{{ url_for('static', filename='user_interactions.png') }}" alt="User Interactions">
-    <img src="{{ url_for('static', filename='interaction_types.png') }}" alt="Interaction Types">
-    <img src="{{ url_for('static', filename='average_duration_by_interaction.png') }}" alt="Average Duration by Interaction">
-    <img src="{{ url_for('static', filename='interactions_by_zone.png') }}" alt="Interactions by Zone">
-    <img src="{{ url_for('static', filename='duration_histogram.png') }}" alt="Duration Histogram">
+    <div class="container">
+        <h1 class="my-4">Statistiques d'Interaction</h1>
+        <div class="row">
+            <div class="col-md-6">
+                <img src="{{ url_for('static', filename='user_interactions.png') }}" class="img-fluid" alt="Nombre d'interactions par utilisateur">
+            </div>
+            <div class="col-md-6">
+                <img src="{{ url_for('static', filename='interaction_types.png') }}" class="img-fluid" alt="Nombre d'interactions par type">
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <img src="{{ url_for('static', filename='average_duration_by_interaction.png') }}" class="img-fluid" alt="Durée moyenne des interactions par type">
+            </div>
+            <div class="col-md-6">
+                <img src="{{ url_for('static', filename='interactions_by_zone.png') }}" class="img-fluid" alt="Nombre d'interactions par zone">
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <img src="{{ url_for('static', filename='duration_histogram.png') }}" class="img-fluid" alt="Distribution de la durée des interactions">
+            </div>
+        </div>
+    </div>
 </body>
 </html>
