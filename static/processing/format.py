@@ -1,21 +1,17 @@
 import numpy as np
 import cv2
-import folium
 from scipy.spatial import Delaunay
 import json
 import os
-import time
 import tqdm
 from sklearn.linear_model import LinearRegression
 import json
 import sys
-import glob
+
 # Paramètres de la caméra
 focal_length = 3.15  # Distance focale en mm
 aperture = 2.35      # Ouverture
 angle_diagonal = 16  # Angle de vue diagonal en degrés
-
-link_map_leaflet = 'https://tiles.arcgis.com/tiles/5e9nT6GAayqss4ni/arcgis/rest/services/ORTHO2022_5cm/MapServer/WMTS/1.0.0/WMTSCapabilities.xml'
 
 def process_all_interactions(directory):
     for filename in os.listdir(directory):
@@ -57,28 +53,12 @@ def calculate_geographic_coordinates(u, v, triangles, geo_triangles, tri):
             return lat, lon
     return -1, -1
 
-    
-
 def load_json_data(link):
     with open(link) as f:
         data = json.load(f)
     return data
 
 def get_image_points_and_geo_coords(link):
-    # if 'C1_Thiers' in link:
-    #     geographic_coords = [(47.322029, 5.051598), (47.321946, 5.051641), (47.321968, 5.051779), (47.322, 5.051837), (47.322011, 5.051762), (47.322061, 5.051871), (47.322163, 5.05175), (47.322148, 5.051658), (47.322115, 5.052182), (47.321746, 5.051855), (47.322039, 5.051642), (47.321699, 5.052118), (47.321727, 5.052172), (47.322106, 5.051819), (47.322132, 5.051782)]
-    #     image_points = np.array([(345, 571), (754, 433), (539, 328), (452, 314), (428, 340), (345, 310), (91, 346), (5, 390), (303, 284), (798, 313), (318, 449), (697, 279), (653, 275), (242, 325), (178, 335)])
-    # elif 'C7_Carnot' in link:
-    #     # Points de l'image pour C7_Carnot
-    #     # image_points = np.array([[495, 217], [667, 194], [309, 234], [248, 492], [776, 298], [690, 254], [763, 213], [115, 217], [3, 284], [0, 504], [261, 173], [361, 177], [564, 568], [142, 340], [561, 324],[ 568, 220], [327, 373], [675, 289], [767, 262], [353, 466], [519, 422], [695, 345], [758, 306], [788, 287]], dtype=np.float32)
-    #     # # Coordonnées géographiques pour C7_Carnot
-    #     # geographic_coords = [(47.321361, 5.051694), (47.321222, 5.051583), (47.321417, 5.051750), (47.321500, 5.051639), (47.321361, 5.051528), (47.321361, 5.051583), (47.321125, 5.051428), (47.321447, 5.052046), (47.321563, 5.051865),(47.321529, 5.051678), (47.321286, 5.052094), (47.321300, 5.051900), (47.321475, 5.051601), (47.321483, 5.051722), (47.321429, 5.051628),(47.321346, 5.051657), (47.321464, 5.051666),(47.321390, 5.051593),(47.321318, 5.051514),(47.321476, 5.051640), (47.321457, 5.051622), (47.321421, 5.051584), (47.321384, 5.051546), (47.321348, 5.051510)]
-    #     geographic_coords = [(291, 607), (286, 617), (299, 625), (274, 625), (278, 651), (253, 661), (257, 685), (235, 713), (250, 712), (310, 703), (338, 680), (342, 665), (333, 617), (506, 639), (302, 580), (316, 594), (466, 612), (424, 790), (342, 754), (275, 798), (255, 835), (262, 615)]
-    #     image_points =np.array( [(244, 499), (354, 467), (321, 375), (521, 426), (560, 326), (721, 349), (696, 288), (777, 268), (714, 249), (500, 217), (361, 227), (310, 235), (157, 316), (91, 210), (0, 564), (0, 461), (2, 248), (359, 170), (478, 187), (634, 186), (688, 190),(585, 597)] )
-    # else:
-    #     image_points = np.array([])
-    #     geographic_coords = [()]
-    # ouvre le json qui contient les coordonnées des points triangle.json
     with open('static/triangle.json') as f:
         camera = link.split('/')[-1].split('_')[0]
         data = json.load(f)
