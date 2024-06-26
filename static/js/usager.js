@@ -383,6 +383,7 @@ function filterAndRenderInteractions(userType, interactionType, userData, intera
       });
     });
     $(".creer-btn").click(function () {
+      loading_wait();
       // Récupérer les valeurs des champs de texte
       const startTime = document.querySelector('input[name="newstart_time"]').value;
       const endTime = document.querySelector('input[name="newend_time"]').value;
@@ -431,10 +432,14 @@ function filterAndRenderInteractions(userType, interactionType, userData, intera
           iduser: iduser
         },
         success: function(response) {
+            loaded_wait();
+
             alert("Données envoyées avec succès");
             // Actualiser la page ou afficher un message de réussite, etc.
         },
         error: function(xhr, status, error) {
+            loaded_wait();
+
             alert("Échec de l'envoi des données");
             // Afficher un message d'erreur à l'utilisateur, etc.
         }
