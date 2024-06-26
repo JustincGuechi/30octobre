@@ -87,20 +87,16 @@
     <div id="monForm" style="display: none;">
         <form id="interactionForm">
             <div class="creat-details">
-                <li class="time-code-debut-type">Time-Code Début: <input type="text" name="start_time" value=""></li>
-                <li class="time-code-fin-type">Time-Code Fin: <input type="text" name="end_time" value=""></li>
-                <li class="interaction-type">Interaction: <input type="text" name="interaction" value=""></li>
+                <li class="time-code-debut-type">Time-Code Début: <input type="text" name="newstart_time" value=""></li>
+                <li class="time-code-fin-type">Time-Code Fin: <input type="text" name="newend_time" value=""></li>
+                <li class="interaction-type">Interaction: <input type="text" name="newinteraction" value=""></li>
                 <li class="usager-1">Usager 1: </li>
-                <div id="list3" class="dropdown-check-list" tabindex="100" style="overflow-y: scroll; max-height: 200px;">
-                    <input type="text" class="anchor3" placeholder="Ville">
-                    <ul class="items">
-                        {% for item in data %}
-                            <li><input type="checkbox" value="{{ item.ID }}">{{ item.ID }}</li>
-                        {% endfor %}
-                    </ul>
-                </div>
-                <li class="commentaire-type">Commentaire: <input type="text" name="commentaire" value=""></li>
-                <li class="statut-type">Validé: <input type="checkbox" name="valide" value="false"></li>
+                <select id="userIDSelect">
+                    <option value="">Tous les ID</option>
+                </select>
+                
+                <li class="commentaire-type">Commentaire: <input type="text" name="newcommentaire" value=""></li>
+                <li class="statut-type">Validé: <input type="checkbox" name="newvalide" value="false"></li>
                 <button type="button" class="creer-btn" >Créer</button>
             </div>
         </form>

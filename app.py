@@ -5,6 +5,7 @@ import json
 from flask_restful import Api, Resource
 import secrets
 import re
+import uuid
 
 app = Flask(__name__)
 api = Api(app)
@@ -607,55 +608,115 @@ def delete_interaction():
     return 'Interaction ID {} supprimée avec succès !'.format(interaction_id)
 
 
-@app.route('/create_interaction', methods=['POST'])
+@app.route('/create_interaction', methods=['GET'])
 def create_interaction():
     if not session.get('logged_in'):
         return redirect(url_for('login'))
-    urlVideoInteraction = request.args.get('urlVideoInteraction')
-    # Traiter les données pour créer une nouvelle interaction
-    interaction_data = request.json
+    camera = request.args.get('camera')
+    dayHour = request.args.get('dayHour')
+    if not camera or not dayHour:
+        return "Camera or dayHour parameter is missing", 400
+ 
+    # Extraction de l'heure de début de l'intervalle
+    # Extraction de l'heure de début de l'intervalle
+    dayHour_split = dayHour.split("_")
+    dayHour_prefix = "_".join(dayHour_split[:4]) + "_"
+ 
+    # Extraire l'heure, la convertir en entier et lui soustraire 1
+    hour_str = dayHour_split[3]
+    hour_int = int(hour_str)
+ 
+    # Formater l'heure modifiée avec un zéro devant si nécessaire
+    if len(str(hour_int)) == 1:
+        nvhour_int = "0" + str(hour_int)
+    else:
+        nvhour_int = str(hour_int)
+ 
+    # Mettre à jour le dayHour_split avec la nouvelle heure
+    dayHour_split[3] = nvhour_int
+ 
+    dayHour_avant = "_".join(dayHour_split[:4]) + "_"
+    nameprefix = find_video_file_json(camera, dayHour_avant)
+    nameprefix = os.path.splitext(nameprefix)[0]
+    json_file_path1 = os.path.join(f"{nameprefix}_geo_interactions.json")
+    if os.path.exists(json_file_path1):
+        with open(json_file_path1, 'r') as f:
+            data1 = json.load(f)  # Charge les données JSON depuis le fichier
+
+    camera = request.args.get('camera')
+    dayHour = request.args.get('dayHour')
+    if not camera or not dayHour:
+        return "Camera or dayHour parameter is missing", 400
+ 
+    # Extraction de l'heure de début de l'intervalle
+    # Extraction de l'heure de début de l'intervalle
+    dayHour_split = dayHour.split("_")
+    dayHour_prefix = "_".join(dayHour_split[:4]) + "_"
+ 
+    # Extraire l'heure, la convertir en entier et lui soustraire 1
+    hour_str = dayHour_split[3]
+    hour_int = int(hour_str) - 1
+ 
+    # Formater l'heure modifiée avec un zéro devant si nécessaire
+    if len(str(hour_int)) == 1:
+        nvhour_int = "0" + str(hour_int)
+    else:
+        nvhour_int = str(hour_int)
+ 
+    # Mettre à jour le dayHour_split avec la nouvelle heure
+    dayHour_split[3] = nvhour_int
+ 
+    dayHour_avant = "_".join(dayHour_split[:4]) + "_"
+    nameprefix = find_video_file_json(camera, dayHour_avant)
+    nameprefix = os.path.splitext(nameprefix)[0]
+    json_file_path = os.path.join(f"{nameprefix}_geo_interactions.json")
+
+    if os.path.exists(json_file_path):
+        with open(json_file_path, 'r') as f:
+            data = json.load(f)  # Charge les données JSON depuis le fichier
+    
 
     # Extraire les données de la requête JSON
-    interaction_id = interaction_data.get('ID')
-    time_code_debut = interaction_data.get('Time_code_debut')
-    time_code_fin = interaction_data.get('Time_code_fin')
-    interaction = interaction_data.get('Interaction')
-    commentaire = interaction_data.get('Commentaire')
-    valide = interaction_data.get('Valide')
+    time_code_debut = request.args.get('start_time')
+    time_code_fin = request.args.get('end_time')
+    interaction = request.args.get('interaction')
+    commentaire = request.args.get('commentaire')
+    valide = request.args.get('valide')
+    num_video = request.args.get('num_video')
+    iduser = request.args.get('iduser')
+
+    if(num_video == "1"):
+        data.append({
+            'id_interaction': str(uuid.uuid1()),
+            'start_time': int(time_code_debut),
+            'end_time': int(time_code_fin),
+            'interaction': interaction,
+            'commentaire': commentaire,
+            'valide': valide,
+            'id' : [iduser]
+        })
+        print(json_file_path)
+    else:
+        data1.append({
+            'id_interaction': str(uuid.uuid1()),
+            'start_time': int(time_code_debut),
+            'end_time': int(time_code_fin),
+            'interaction': interaction,
+            'commentaire': commentaire,
+            'valide': valide,
+            'id' : [iduser]
+
+            
+        })
+        print(json_file_path1)
 
 
-
-    # Initialiser la liste des usagers
-    # Traiter les données pour créer une nouvelle interactio
-    usagers = []
-    # Initialiser la liste des usagers
-    if 'User' in interaction_data:
-        # Parcourir chaque usager dans la liste des usagers fournie
-        for usager in interaction_data['User']:
-            # Ajouter l'ID de l'usager à la liste des usagers
-            usagers.append({'ID_usager': usager.get('ID_usager')})
-
-
-    # Charger les données JSON existantes à partir du fichier
-    with open(urlVideoInteraction, 'r') as file:
-        data = json.load(file)
-
-        # Ajouter un nouvel objet avec les données fournies
-        nouvel_objet = {
-            'ID': interaction_id,
-            'Time_code_debut': time_code_debut,
-            'Time_code_fin': time_code_fin,
-            'Interaction': interaction,
-            'Usager': usagers,
-            'Commentaire': commentaire,
-            'Valide': valide
-        }
-
-        data['Data'].append(nouvel_objet)
 
     # Enregistrer la structure de données mise à jour dans le fichier JSON
-    with open(urlVideoInteraction, 'w') as file:
+    with open(json_file_path, 'w') as file:
         json.dump(data, file, indent=4)
+    with open(json_file_path1, 'w') as file:
+        json.dump(data1, file, indent=4)
 
     # Vous pouvez retourner une réponse JSON pour informer le frontend que l'interaction a été créée avec succès
     response = {'success': True, 'message': 'Nouvelle interaction créée avec succès !'}

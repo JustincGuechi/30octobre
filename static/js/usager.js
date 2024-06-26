@@ -48,7 +48,7 @@ $('#userIDSelect').empty();
     userData.forEach(function (obj) {
 
         utilisateurs[obj.Usager] = true;
-        $('#userIDSelect').append('<option value="' + obj.ID + '">' + obj.ID + '</option>');
+        $('#userIDSelect').append('<option value="' + obj.ID2 + '">' + obj.ID2 + '</option>');
 
     });
   }
@@ -145,9 +145,18 @@ function filterAndRenderInteractions(userType, interactionType, data_minute_sec)
       var minutesFormatted = minutes.toString().padStart(2, '0');
       var secondsFormatted = seconds.toString().padStart(2, '0');
 
-      var totalhours = hours - hours1;
-      var totalminutes = minutes - minutes1;
-      var totalseconds = seconds - seconds1;
+      // Convertir tout en secondes
+      var totalSecondsStart = (hours * 3600) + (minutes * 60) + seconds;
+      var totalSecondsEnd = (hours1 * 3600) + (minutes1 * 60) + seconds1;
+
+// Calculer la différence en secondes
+      var differenceInSeconds = totalSecondsStart - totalSecondsEnd;
+
+      // Convertir la différence en heures, minutes, secondes
+      var totalhours = Math.floor(differenceInSeconds / 3600);
+      differenceInSeconds %= 3600;
+      var totalminutes = Math.floor(differenceInSeconds / 60);
+      var totalseconds = differenceInSeconds % 60;
 
       var totalhoursFormatted = totalhours.toString().padStart(2, '0');
       var totalminutesFormatted = totalminutes.toString().padStart(2, '0');
@@ -364,7 +373,7 @@ function filterAndRenderInteractions(userType, interactionType, data_minute_sec)
       const interaction = document.querySelector('input[name="newinteraction"]').value;
       const commentaire = document.querySelector('input[name="newcommentaire"]').value;
       const valide = document.querySelector('input[name="newvalide"]').checked;
-  
+      const iduser = document.getElementById('userIDSelect').value;
       // Récupérer les valeurs des checkboxes sélectionnées
       const selectedValues = Array.from(document.querySelectorAll('#list3 .items input[type="checkbox"]:checked'))
                                   .map(checkbox => checkbox.value);
@@ -404,7 +413,8 @@ function filterAndRenderInteractions(userType, interactionType, data_minute_sec)
           valide: data["valide"],
           num_video : num_video,
           dayHour: dayHour,
-          camera: cameraSelect.value
+          camera: cameraSelect.value,
+          iduser: iduser
         },
         success: function(response) {
             alert("Données envoyées avec succès");
