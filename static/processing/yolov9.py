@@ -2,19 +2,15 @@ from collections import defaultdict
 import cv2
 import json
 import numpy as np
-import torch
 from collections import Counter
- 
 from ultralytics import YOLO
- 
- 
+
 # Load the YOLOv8 model
 def load_model():
     model = YOLO('yolov8n.pt').to('cpu')
     # model = YOLO('yolov9e.pt')
     return model
- 
- 
+
 # Process a single video frame
 def process_frame(cap, model, frame, frame_id, track_history, track_history_with_label):
     results = model.track(frame, persist=True)
@@ -31,9 +27,9 @@ def process_frame(cap, model, frame, frame_id, track_history, track_history_with
             boxes = []
             labels = []
             track_ids = []
- 
+
         annotated_frame = results[0].plot()
- 
+
         for box, label, track_id in zip(boxes, labels, track_ids):
             x, y, w, h = box
             track = track_history[track_id]
@@ -63,8 +59,7 @@ def calculate_most_frequent_labels(track_history_with_label):
         most_common_label = Counter(labels).most_common(1)[0][0]
         most_frequent_labels[track_id] = most_common_label
     return most_frequent_labels
- 
- 
+
 # Replace the labels in the track history with the most frequent label
 def replace_labels(track_history_with_label, most_frequent_labels):
     for track_id, track in track_history_with_label.items():
