@@ -96,7 +96,6 @@ function filterAndRenderInteractions(userType, interactionType, userData, intera
             return obj.ID2;
         });
 
-    console.log("filteredID2s:", filteredID2s);
 
     // Étape 2 : Utiliser ces ID2 pour filtrer les interactions
     var filteredInteractions = [];
@@ -112,7 +111,6 @@ function filterAndRenderInteractions(userType, interactionType, userData, intera
         }
     });
 
-    console.log("filteredInteractions:", filteredInteractions);
 
     // Appeler la fonction pour rendre les interactions filtrées
     renderFilteredInteractions(filteredInteractions, data_minute_sec);
@@ -121,8 +119,7 @@ function filterAndRenderInteractions(userType, interactionType, userData, intera
 
   // Fonction pour afficher les interactions filtrées en fonction de l'interaction sélectionnée
   function renderFilteredInteractions(data, data_minute_sec) {
-    console.log("timerElement :", data_minute_sec);
-    console.log("get dayhour", dayHour);
+
     // Étape 1 : Séparer la chaîne sur les caractères de soulignement
     var parts = dayHour.split("_");
 
@@ -242,7 +239,6 @@ function filterAndRenderInteractions(userType, interactionType, userData, intera
       interactionsHtml += "</ul>";
       interactionsHtml += "</form>";
       interactionsHtml += "</div>";
-      console.log(obj.ID);
     });
     $("#filteredInteractions").html(interactionsHtml);
 
@@ -256,7 +252,6 @@ function filterAndRenderInteractions(userType, interactionType, userData, intera
     });
 
     $(".valid-btn").click(function () {
-      console.log("Valide button clicked");
 
       // Récupérer l'ID de l'interaction à partir de l'attribut data
       var interactionId = $(this)
@@ -277,7 +272,6 @@ function filterAndRenderInteractions(userType, interactionType, userData, intera
         },
         success: function (response) {
           alert("Validé avec succès");
-          console.log("Statut mis à jour avec succès !");
           // Actualiser la page ou afficher un message de réussite, etc.
         },
         error: function (xhr, status, error) {
@@ -309,16 +303,12 @@ function filterAndRenderInteractions(userType, interactionType, userData, intera
         Commentaire: $interactionContainer.find('input[name="commentaire"]').val(),
         Validé: $interactionContainer.find('input[name="statut"]').val(),
     };
-      console.log("interactionToUpdate", interactionToUpdate);
       time = parseInt(data_minute_sec["minutes"]) * 60 + parseInt(data_minute_sec["seconds"]) + hour * 3600;
       timecode = interactionToUpdate.Time_code_debut.split(":");
-      console.log(timecode);
       start_time_update = parseInt(timecode[0]) * 3600 + parseInt(timecode[1]) * 60 + parseInt(timecode[2]) - time;
       
       timecode = interactionToUpdate.Time_code_fin.split(":");
       stop_time_update = parseInt(timecode[0]) * 3600 + parseInt(timecode[1]) * 60 + parseInt(timecode[2]) - time;
-      console.log("start_time_update", start_time_update);
-      console.log("stop_time_update", stop_time_update);
       const day_hour = document.getElementById("day_hour");
       var heureActuelleFormatted = parseInt(day_hour.textContent)// Ajoute un zéro devant si nécessaire et prend les deux derniers chiffres
       
@@ -341,12 +331,10 @@ function filterAndRenderInteractions(userType, interactionType, userData, intera
         },
         success: function (response) {
           alert("Modifier avec succès");
-          console.log("Données mises à jour avec succès !");
           // Actualiser la page ou afficher un message de réussite, etc.
         },
         error: function (xhr, status, error) {
           alert("echec de la modification");
-          console.error("Erreur lors de la mise à jour des données :", error);
           // Afficher un message d'erreur à l'utilisateur, etc.
         },
       });
@@ -372,7 +360,6 @@ function filterAndRenderInteractions(userType, interactionType, userData, intera
         success: function (response) {
           alert("Supprimé avec succès");
 
-          console.log("Interaction supprimée avec succès !");
           // Actualiser la page ou afficher un message de réussite, etc.
         },
         error: function (xhr, status, error) {
@@ -387,7 +374,6 @@ function filterAndRenderInteractions(userType, interactionType, userData, intera
       });
     });
     $(".creer-btn").click(function () {
-      console.log("Créer button clicked");
       // Récupérer les valeurs des champs de texte
       const startTime = document.querySelector('input[name="newstart_time"]').value;
       const endTime = document.querySelector('input[name="newend_time"]').value;
@@ -408,11 +394,9 @@ function filterAndRenderInteractions(userType, interactionType, userData, intera
           commentaire: commentaire,
           valide: valide
       };
-      console.log("data", data);
 
       time = parseInt(data_minute_sec["minutes"]) * 60 + parseInt(data_minute_sec["seconds"]) + hour * 3600;
       timecode =  data["start_time"].split(":");
-      console.log(timecode);
   
       start_time_update = parseInt(timecode[0]) * 3600 + parseInt(timecode[1]) * 60 + parseInt(timecode[2]) - time;
       timecode = data["end_time"].split(":");
@@ -422,8 +406,6 @@ function filterAndRenderInteractions(userType, interactionType, userData, intera
       const numvideo = document.getElementById("num_video");
       var num_video = parseInt(numvideo.textContent)// Ajoute un zéro devant si nécessaire et prend les deux derniers chiffres
       
-      console.log("start_time_update", start_time_update);
-      console.log("stop_time_update", stop_time_update);  
        $.ajax({
         url: "/create_interaction", // Remplacez '/your-endpoint-url' par l'URL de votre endpoint
         method: "GET",
@@ -441,12 +423,10 @@ function filterAndRenderInteractions(userType, interactionType, userData, intera
         },
         success: function(response) {
             alert("Données envoyées avec succès");
-            console.log("Réponse du serveur:", response);
             // Actualiser la page ou afficher un message de réussite, etc.
         },
         error: function(xhr, status, error) {
             alert("Échec de l'envoi des données");
-            console.error("Erreur lors de l'envoi des données:", error);
             // Afficher un message d'erreur à l'utilisateur, etc.
         }
     });
@@ -534,7 +514,6 @@ function filterAndRenderInteractions(userType, interactionType, userData, intera
       afficherUsagers(data_usager1, data_minute_sec);
       afficherID(data_usager1);
     }
-    console.log("data_interaction1", data_interaction1);
     if (data_interaction1) {
       affichage_interaction_avec_data(data_interaction1,data_usager1, data_minute_sec);
     }
@@ -577,7 +556,6 @@ function filterAndRenderInteractions(userType, interactionType, userData, intera
 
       const url_interaction2 = `/get_interactions2?camera=${camera}&dayHour=${dayHour}`;
       const data_interaction2 = await chargerDonneesJson(url_interaction2);
-      console.log("data_interaction2", data_interaction2);
       if (data_interaction2) {
         affichage_interaction_avec_data(data_interaction2,data_usager2, data_minute_sec);
 
@@ -757,7 +735,6 @@ function filterAndRenderInteractions(userType, interactionType, userData, intera
       const formattedTime = formatTime(totalSeconds);
       timerElement.textContent = `Temps écoulé : ${formattedTime}`;
       timerTotal.textContent = totalSeconds;
-      console.log("totalSeconds",totalSeconds);
     } catch (error) {
       console.error("Erreur lors de la mise à jour du timer :", error);
     }
@@ -844,7 +821,6 @@ function filterAndRenderInteractions(userType, interactionType, userData, intera
       const dayHeader = document.createElement("h3");
       dayHeader.textContent = day;
       dayDiv.appendChild(dayHeader);
-      console.log("starthour initiale : ", startHour);
       hours.forEach((hour) => {
         const hourButton = document.createElement("button");
         hourButton.textContent = hour;
@@ -853,7 +829,6 @@ function filterAndRenderInteractions(userType, interactionType, userData, intera
 
           const selectedDay = day;
           const selectedHour = hour;
-          console.log("Jour:", selectedDay, "- Heure:", selectedHour);
           const day_actual_element = document.getElementById("day_actual");
           day_actual_element.textContent = dayMap[selectedDay].split("_")[2];
 
@@ -861,11 +836,9 @@ function filterAndRenderInteractions(userType, interactionType, userData, intera
           if (startHour == 0) {
             const hourStart = parseInt(selectedHour.split("h")[0]);
             startHour = hourStart; // Update start hour based on selected hour
-            console.log("starthour : ", startHour);
           }
 
           dayHour = `${dayMap[selectedDay]}_${selectedHour.replace("h", "_")}`;
-          console.log("DATEhOUR:", dayHour);
           chargerVideoEtDonnees(selectedCamera, dayHour);
         });
         hourButton.value = `${selectedCamera}_${dayMap[day]}_${hour.split("h")[0]
@@ -910,14 +883,12 @@ function filterAndRenderInteractions(userType, interactionType, userData, intera
   // il doit desctiver les bouton le temps du chargement et afficher un message de chargement avec un spinner
   // il doit les réactiver une fois les données chargées
   function loading() {
-    console.log("loading");
     // créer un spinner au dessus de la page
     const spinner = document.getElementById("spinner");
     spinner.style.display = "block";
     load = false;
   }
   function loaded() {
-    console.log("loaded");
     // cacher le spinner
     const spinner = document.getElementById("spinner");
     spinner.style.display = "none";
@@ -925,7 +896,6 @@ function filterAndRenderInteractions(userType, interactionType, userData, intera
     // chargement du temps
     time_loading();
     load = true;
-    console.log("load", load);
 
   }
   async function time_loading() {
@@ -939,13 +909,11 @@ function filterAndRenderInteractions(userType, interactionType, userData, intera
         (3600 - minutesSecData1["minutes"] * 60 - minutesSecData1["seconds"]) *
         0.7;
       video.currentTime = debut;
-      console.log("debut", debut);
       updateTimer(debut, selectedCamera, dayHour);
       init_data();
     }
   }
   function loaded2() {
-    console.log("loaded...2");
     // cacher le spinner
     const spinner = document.getElementById("spinner");
     spinner.style.display = "none";
@@ -953,7 +921,6 @@ function filterAndRenderInteractions(userType, interactionType, userData, intera
     // chargement du temps
     time_loading2();
     load = true;
-    console.log("load...2", load);
 
   }
   async function time_loading2() {
@@ -969,10 +936,8 @@ function filterAndRenderInteractions(userType, interactionType, userData, intera
       //updateTimer(debut, selectedCamera, dayHour);
       //updateTimer_une_heure();
       //hour = hour+1;
-      console.log("hour :", hour);
       hour = parseInt(hour) + 1;
 
-      console.log("hour+1 :", hour);
       init_data();
     }
   }
