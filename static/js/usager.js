@@ -382,6 +382,8 @@ function filterAndRenderInteractions(userType, interactionType, userData, intera
         },
       });
     });
+    $(".creer-btn").off('click');
+
     $(".creer-btn").click(function () {
       loading_wait();
       // Récupérer les valeurs des champs de texte
@@ -394,7 +396,7 @@ function filterAndRenderInteractions(userType, interactionType, userData, intera
       // Récupérer les valeurs des checkboxes sélectionnées
       const selectedValues = Array.from(document.querySelectorAll('#list3 .items input[type="checkbox"]:checked'))
                                   .map(checkbox => checkbox.value);
-  
+      console.log("une ou deux fois?");
       // Préparer les données pour la requête AJAX
       const data = {
           start_time: startTime,
