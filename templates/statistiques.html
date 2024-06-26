@@ -1,23 +1,17 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Statistiques</title>
-    <link rel="stylesheet" href="../static/css/statistiques.css">
+    <title>Statistiques de Trafic</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles_stat.css') }}">
 </head>
 <body>
-    <h1>Statistiques</h1>
-    <div id="barChartContainer">
-        <canvas id="barChart"></canvas>
-    </div>
-    <div id="pieChartContainer">
-        <canvas id="pieChart"></canvas>
-    </div>
-     <!-- Canvas pour afficher le graphique -->
-    <canvas id="lineChart" width="800" height="400"></canvas>
-
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="../static/js/statistiques.js"></script>
+    <h1>Statistiques de Trafic</h1>
+    <img src="{{ url_for('static', filename='user_interactions.png') }}" alt="User Interactions">
+    <img src="{{ url_for('static', filename='interaction_types.png') }}" alt="Interaction Types">
+    <img src="{{ url_for('static', filename='average_duration_by_interaction.png') }}" alt="Average Duration by Interaction">
+    <img src="{{ url_for('static', filename='interactions_by_zone.png') }}" alt="Interactions by Zone">
+    <img src="{{ url_for('static', filename='duration_histogram.png') }}" alt="Duration Histogram">
 </body>
 </html>

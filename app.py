@@ -6,6 +6,8 @@ from flask_restful import Api, Resource
 import secrets
 import re
 import uuid
+import matplotlib.pyplot as plt
+import pandas as pd
 
 app = Flask(__name__)
 api = Api(app)
@@ -126,11 +128,7 @@ def get_json_for_plan():
                     return jsonify({"error": f"Error decoding JSON in file {filename}"}), 500
     return jsonify(matched_files)
 
-@app.route('/statistiques')
-def statistiques():
-    if not session.get('logged_in'):
-        return redirect(url_for('login'))
-    return render_template('statistiques.html')
+
 
 
 
@@ -911,5 +909,102 @@ def get_video_files():
     return jsonify(video_files)
 
 
+
+# Chemin vers le dossier contenant les fichiers JSON
+DATA_DIR = 'static/video/json/'
+
+def load_data():
+    data = []
+    for filename in os.listdir(DATA_DIR):
+        if filename.endswith('interactions.json'):
+            with open(os.path.join(DATA_DIR, filename), 'r') as file:
+                file_data = json.load(file)
+
+                if isinstance(file_data, list):  # Vérifie si file_data est une liste de dictionnaires
+                    data.extend(file_data)
+                elif isinstance(file_data, dict):  # Vérifie si file_data est un seul dictionnaire
+                    data.append(file_data)
+    return data
+
+
+def safe_float(value, default=0.0):
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return default
+
+def create_dataframe(data):
+    records = []
+    for entry in data:
+        if isinstance(entry, dict):  # Vérifie si chaque entrée est bien un dictionnaire
+            start_time = safe_float(entry.get('start_time'))
+            end_time = safe_float(entry.get('end_time'))
+            duration = end_time - start_time
+            records.append({
+                'user': entry.get('user', ''),
+                'interaction': entry.get('interaction', ''),
+                'zone': entry.get('zone', ''),
+                'start_time': start_time,
+                'end_time': end_time,
+                'duration': duration,
+                'valide': entry.get('valide', False)
+            })
+    return pd.DataFrame(records)
+def plot_statistics(df):
+    # Nombre d'interactions par utilisateur
+    plt.figure(figsize=(10, 6))
+    df['user'].value_counts().plot(kind='bar')
+    plt.title('Nombre d\'interactions par utilisateur')
+    plt.xlabel('Utilisateur')
+    plt.ylabel('Nombre d\'interactions')
+    plt.savefig('static/user_interactions.png')
+    plt.close()
+
+    # Nombre d'interactions par type
+    plt.figure(figsize=(10, 6))
+    df['interaction'].value_counts().plot(kind='bar')
+    plt.title('Nombre d\'interactions par type')
+    plt.xlabel('Type d\'interaction')
+    plt.ylabel('Nombre d\'interactions')
+    plt.savefig('static/interaction_types.png')
+    plt.close()
+
+    # Durée moyenne des interactions par type
+    plt.figure(figsize=(10, 6))
+    df.groupby('interaction')['duration'].mean().plot(kind='bar')
+    plt.title('Durée moyenne des interactions par type')
+    plt.xlabel('Type d\'interaction')
+    plt.ylabel('Durée moyenne (s)')
+    plt.savefig('static/average_duration_by_interaction.png')
+    plt.close()
+
+    # Nombre d'interactions par zone
+    plt.figure(figsize=(10, 6))
+    df['zone'].value_counts().plot(kind='bar')
+    plt.title('Nombre d\'interactions par zone')
+    plt.xlabel('Zone')
+    plt.ylabel('Nombre d\'interactions')
+    plt.savefig('static/interactions_by_zone.png')
+    plt.close()
+
+    # Histogramme de la durée des interactions
+    plt.figure(figsize=(10, 6))
+    df['duration'].plot(kind='hist', bins=30)
+    plt.title('Distribution de la durée des interactions')
+    plt.xlabel('Durée (s)')
+    plt.ylabel('Fréquence')
+    plt.savefig('static/duration_histogram.png')
+    plt.close()
+
+
+@app.route('/statistiques')
+def statistiques():
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+    data = load_data()
+    df = create_dataframe(data)
+    plot_statistics(df)
+    return render_template('statistiques.html')
+    
 if __name__ == "__main__":
     app.run(debug=True)
