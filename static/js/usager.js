@@ -19,7 +19,7 @@ $(document).ready(function () {
 
   
 
-  function afficherUsagers(userData) {
+  function afficherUsagers(userData, data_minute_sec) {
 
     // Création des options du menu déroulant pour les utilisateurs
     var utilisateurs = {};
@@ -32,10 +32,10 @@ $(document).ready(function () {
 
     // Gestionnaire d'événement pour le changement de sélection dans le menu déroulant des utilisateurs
     $('#userTypeSelect').change(function () {
-      var selectedUsager = $(this).val();
-      var selectedInteraction = $('#interactionSelect').val();
-      filterAndRenderInteractions(selectedUsager, selectedInteraction);
-    });
+    var selectedUsager = $(this).val();
+    var selectedInteraction = $('#interactionSelect').val();
+    filterAndRenderInteractions(selectedUsager, selectedInteraction, userData, interactionData, data_minute_sec);
+});
 
     // Affichage initial des interactions avec toutes les données d'usager
     //filterAndRenderInteractions('', '');
@@ -54,7 +54,7 @@ $('#userIDSelect').empty();
   }
 
   // Chargement des interactions depuis l'API Flask
-async function affichage_interaction_avec_data(response, data_minute_sec) {
+async function affichage_interaction_avec_data(response,userData, data_minute_sec) {
     // Réinitialiser le menu déroulant des interactions
     $('#interactionSelect').empty();
 
@@ -76,7 +76,7 @@ async function affichage_interaction_avec_data(response, data_minute_sec) {
     $('#interactionSelect').off('change').on('change', function () {
         var selectedInteraction = $(this).val();
         var selectedUsager = $('#userTypeSelect').val();
-        filterAndRenderInteractions(selectedUsager, selectedInteraction, data_minute_sec);
+        filterAndRenderInteractions(selectedUsager, selectedInteraction,userData, interactionData, data_minute_sec);
     });
 
     // Affichage initial des interactions avec tous les time_codes
@@ -85,15 +85,37 @@ async function affichage_interaction_avec_data(response, data_minute_sec) {
 
 
   // Fonction pour filtrer les interactions en fonction des utilisateurs et des interactions sélectionnés
-function filterAndRenderInteractions(userType, interactionType, data_minute_sec) {
-    console.log("Filtering interactions for user type:", userType, "and interaction type:", interactionType);
+function filterAndRenderInteractions(userType, interactionType, userData, interactionData, data_minute_sec) {
 
-    var filteredData = interactionData.filter(function (obj) {
-        return (obj.interaction === interactionType || !interactionType) &&
-               (obj.id.includes(userType) || !userType);
+    // Étape 1 : Filtrer les usagers pour obtenir les ID2
+    var filteredID2s = userData
+        .filter(function (obj) {
+            return obj.Usager.includes(userType);
+        })
+        .map(function (obj) {
+            return obj.ID2;
+        });
+
+    console.log("filteredID2s:", filteredID2s);
+
+    // Étape 2 : Utiliser ces ID2 pour filtrer les interactions
+    var filteredInteractions = [];
+
+    interactionData.forEach(function (interaction) {
+        // Vérifier si au moins un ID2 est inclus dans interaction.id
+        var found = filteredID2s.some(function (id2) {
+            return interaction.id.includes(id2);
+        });
+
+        if (found && (interaction.interaction === interactionType || !interactionType)) {
+            filteredInteractions.push(interaction);
+        }
     });
 
-    renderFilteredInteractions(filteredData, data_minute_sec);
+    console.log("filteredInteractions:", filteredInteractions);
+
+    // Appeler la fonction pour rendre les interactions filtrées
+    renderFilteredInteractions(filteredInteractions, data_minute_sec);
 }
 
 
@@ -268,8 +290,8 @@ function filterAndRenderInteractions(userType, interactionType, data_minute_sec)
         },
       });
     });
-    
-    
+
+
 
     // Event listener for modifier button
     $(".modifier-btn").click(function () {
@@ -508,12 +530,12 @@ function filterAndRenderInteractions(userType, interactionType, data_minute_sec)
     const data_minute_sec = await chargerDonneesJson(urlminutesec);
 
     if (data_usager1) {
-      afficherUsagers(data_usager1);
+      afficherUsagers(data_usager1, data_minute_sec);
       afficherID(data_usager1);
     }
     console.log("data_interaction1", data_interaction1);
     if (data_interaction1) {
-      affichage_interaction_avec_data(data_interaction1, data_minute_sec);
+      affichage_interaction_avec_data(data_interaction1,data_usager1, data_minute_sec);
     }
 
     video.src = videoUrl1;
@@ -548,7 +570,7 @@ function filterAndRenderInteractions(userType, interactionType, data_minute_sec)
       const data_usager2 = await chargerDonneesJson(url_usager2);
 
       if (data_usager2) {
-        afficherUsagers(data_usager2);
+        afficherUsagers(data_usager2, data_minute_sec);
         afficherID(data_usager2);
       }
 
@@ -556,7 +578,7 @@ function filterAndRenderInteractions(userType, interactionType, data_minute_sec)
       const data_interaction2 = await chargerDonneesJson(url_interaction2);
       console.log("data_interaction2", data_interaction2);
       if (data_interaction2) {
-        affichage_interaction_avec_data(data_interaction2, data_minute_sec);
+        affichage_interaction_avec_data(data_interaction2,data_usager2, data_minute_sec);
 
       }
 
