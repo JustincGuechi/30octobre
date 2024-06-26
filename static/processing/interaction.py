@@ -19,122 +19,89 @@ def found_interaction(list_user, list_zone, authorised_zone):
                 polygon_int_coords = area[0]['int']
                 polygon_ext = Polygon(polygon_ext_coords)
                 polygon_int = Polygon(polygon_int_coords)
-                
-                interaction_started = False
-                start_time = None
-                end_time = None
-
-                for data in user["data"]:
-                    if data["lat"] != -1 and data["lon"] != -1:
-                        try:
-                            point = Point(data["lat"], data["lon"])
-                            if polygon_ext.contains(point) and not polygon_int.contains(point):
-                                for auth_zone, auth_area in authorised_zone:
-                                    auth_polygon = Polygon(auth_area[0])
-                                    if not auth_polygon.contains(point):
-                                        if not interaction_started:
-                                            start_time = data["time"]
-                                            interaction_started = True
-                                        end_time = data["time"]
-                                        break
-                                else:
-                                    if interaction_started:
-                                        duration = end_time - start_time
-                                        interaction_type = determine_interaction_type(duration)
-                                        interactions.append({
-                                            "user": user['Usager'],
-                                            "id_interaction": str(user['ID']) + user['ID2'],
-                                            "id": [user['ID2']],
-                                            "interaction": interaction_type,
-                                            "zone": zone,
-                                            "start_time": start_time,
-                                            "end_time": end_time,
-                                            "commentaire": "",
-                                            "valide": False
-                                        })
-                                        interaction_started = False
-                                        start_time = None
-                                        end_time = None
-                        except ValueError as e:
-                            print(f"Invalid polygon or point coordinates 1 {zone}: {e}")
-
-                if interaction_started:
-                    duration = end_time - start_time
-                    interaction_type = determine_interaction_type(duration)
-                    interactions.append({
-                        "user": user['Usager'],
-                        "id_interaction": str(user['ID']) + user['ID2'],
-                        "id": [user['ID2']],
-                        "interaction": interaction_type,
-                        "zone": zone,
-                        "start_time": start_time,
-                        "end_time": end_time,
-                        "commentaire": "",
-                        "valide": False
-                    })
-
             else:
-                polygon = Polygon(area[0])
-                
-                interaction_started = False
-                start_time = None
-                end_time = None
+                polygon_ext = Polygon(area[0])
+                polygon_int = None
 
-                for data in user["data"]:
-                    if data["lat"] != -1 and data["lon"] != -1:
-                        try:
-                            point = Point(data["lat"], data["lon"])
-                            if polygon.contains(point):
-                                for auth_zone, auth_area in authorised_zone:
-                                    auth_polygon = Polygon(auth_area[0])
-                                    if not auth_polygon.contains(point):
-                                        if not interaction_started:
-                                            start_time = data["time"]
-                                            interaction_started = True
-                                        end_time = data["time"]
-                                        break
-                                else:
-                                    if interaction_started:
-                                        duration = end_time - start_time
-                                        interaction_type = determine_interaction_type(duration)
-                                        interactions.append({
-                                            "user": user['Usager'],
-                                            "id_interaction": str(user['ID']) + user['ID2'],
-                                            "id": [user['ID2']],
-                                            "interaction": interaction_type,
-                                            "zone": zone,
-                                            "start_time": start_time,
-                                            "end_time": end_time,
-                                            "commentaire": "",
-                                            "valide": False
-                                        })
-                                        interaction_started = False
-                                        start_time = None
-                                        end_time = None
-                        except ValueError as e:
-                            print(f"Invalid polygon or point coordinates 2 {zone}: {e}")
+            interaction_started = False
+            start_time = None
+            end_time = None
 
-                if interaction_started:
-                    duration = end_time - start_time
-                    interaction_type = determine_interaction_type(duration)
-                    interactions.append({
-                        "user": user['Usager'],
-                        "id_interaction": str(user['ID']) + user['ID2'],
-                        "id": [user['ID2']],
-                        "interaction": interaction_type,
-                        "zone": zone,
-                        "start_time": start_time,
-                        "end_time": end_time,
-                        "commentaire": "",
-                        "valide": False
-                    })
+            for data in user["data"]:
+                if data["lat"] != -1 and data["lon"] != -1:
+                    try:
+                        point = Point(data["lat"], data["lon"])
+                        inside_zone = polygon_ext.contains(point) and (not polygon_int or not polygon_int.contains(point))
+                        if inside_zone:
+                            for auth_zone, auth_area in authorised_zone:
+                                auth_polygon = Polygon(auth_area[0])
+                                if not auth_polygon.contains(point):
+                                    if not interaction_started:
+                                        start_time = data["time"]
+                                        interaction_started = True
+                                    end_time = data["time"]
+                                    break
+                            else:
+                                if interaction_started:
+                                    duration = end_time - start_time
+                                    interaction_type = determine_interaction_type(duration)
+                                    interactions.append({
+                                        "user": user['Usager'],
+                                        "id_interaction": str(user['ID']) + user['ID2'],
+                                        "id": [user['ID2']],
+                                        "interaction": interaction_type,
+                                        "zone": zone,
+                                        "start_time": start_time,
+                                        "end_time": end_time,
+                                        "commentaire": "",
+                                        "valide": False
+                                    })
+                                    interaction_started = False
+                                    start_time = None
+                                    end_time = None
+                        else:
+                            if interaction_started:
+                                duration = end_time - start_time
+                                interaction_type = determine_interaction_type(duration)
+                                interactions.append({
+                                    "user": user['Usager'],
+                                    "id_interaction": str(user['ID']) + user['ID2'],
+                                    "id": [user['ID2']],
+                                    "interaction": interaction_type,
+                                    "zone": zone,
+                                    "start_time": start_time,
+                                    "end_time": end_time,
+                                    "commentaire": "",
+                                    "valide": False
+                                })
+                                interaction_started = False
+                                start_time = None
+                                end_time = None
+
+                    except ValueError as e:
+                        print(f"Invalid polygon or point coordinates 1 {zone}: {e}")
+
+            if interaction_started:
+                duration = end_time - start_time
+                interaction_type = determine_interaction_type(duration)
+                interactions.append({
+                    "user": user['Usager'],
+                    "id_interaction": str(user['ID']) + user['ID2'],
+                    "id": [user['ID2']],
+                    "interaction": interaction_type,
+                    "zone": zone,
+                    "start_time": start_time,
+                    "end_time": end_time,
+                    "commentaire": "",
+                    "valide": False
+                })
 
     return interactions
 
 def determine_interaction_type(duration):
-    if duration < 60:
+    if duration < 100:
         return "Franchissement de ligne cours"
-    elif duration < 300:
+    elif duration < 600:
         return "Franchissement de ligne long"
     else:
         return "Autre"

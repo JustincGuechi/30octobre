@@ -34,7 +34,7 @@ aperture = 2.35      # Ouverture
 angle_diagonal = 16  # Angle de vue diagonal en degrés
 
 # Charger la vidéo
-video_path = 'static\\video\\C7_Carnot_2024_02_13_08_48_54.mp4'
+video_path = 'static\\video\\C7_Carnot_2024_02_13_14_49_00.webm'
 plan_path = 'static\\plan.png'
 cap = cv2.VideoCapture(video_path)
 plan = cv2.imread(plan_path)

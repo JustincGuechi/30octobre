@@ -6,6 +6,9 @@ from flask_restful import Api, Resource
 import secrets
 import re
 import uuid
+import matplotlib
+matplotlib.use('Agg')
+
 import matplotlib.pyplot as plt
 import pandas as pd
 
@@ -950,49 +953,62 @@ def create_dataframe(data):
                 'valide': entry.get('valide', False)
             })
     return pd.DataFrame(records)
+
 def plot_statistics(df):
+    plt.style.use('ggplot')  # Utilisation du style ggplot comme alternative
+
     # Nombre d'interactions par utilisateur
     plt.figure(figsize=(10, 6))
-    df['user'].value_counts().plot(kind='bar')
-    plt.title('Nombre d\'interactions par utilisateur')
+    df['user'].value_counts().plot(kind='bar', color='skyblue')
+    plt.yscale('log')
+    plt.title('Nombre d\'interactions par utilisateur (échelle logarithmique)')
     plt.xlabel('Utilisateur')
     plt.ylabel('Nombre d\'interactions')
+    plt.tight_layout()
     plt.savefig('static/user_interactions.png')
     plt.close()
 
     # Nombre d'interactions par type
     plt.figure(figsize=(10, 6))
-    df['interaction'].value_counts().plot(kind='bar')
-    plt.title('Nombre d\'interactions par type')
+    df['interaction'].value_counts().plot(kind='bar', color='salmon')
+    plt.yscale('log')
+    plt.title('Nombre d\'interactions par type (échelle logarithmique)')
     plt.xlabel('Type d\'interaction')
     plt.ylabel('Nombre d\'interactions')
+    plt.tight_layout()
     plt.savefig('static/interaction_types.png')
     plt.close()
 
     # Durée moyenne des interactions par type
     plt.figure(figsize=(10, 6))
-    df.groupby('interaction')['duration'].mean().plot(kind='bar')
-    plt.title('Durée moyenne des interactions par type')
+    df.groupby('interaction')['duration'].mean().plot(kind='bar', color='lightgreen')
+    plt.yscale('log')
+    plt.title('Durée moyenne des interactions par type (échelle logarithmique)')
     plt.xlabel('Type d\'interaction')
     plt.ylabel('Durée moyenne (s)')
+    plt.tight_layout()
     plt.savefig('static/average_duration_by_interaction.png')
     plt.close()
 
     # Nombre d'interactions par zone
     plt.figure(figsize=(10, 6))
-    df['zone'].value_counts().plot(kind='bar')
-    plt.title('Nombre d\'interactions par zone')
+    df['zone'].value_counts().plot(kind='bar', color='lightcoral')
+    plt.yscale('log')
+    plt.title('Nombre d\'interactions par zone (échelle logarithmique)')
     plt.xlabel('Zone')
     plt.ylabel('Nombre d\'interactions')
+    plt.tight_layout()
     plt.savefig('static/interactions_by_zone.png')
     plt.close()
 
     # Histogramme de la durée des interactions
     plt.figure(figsize=(10, 6))
-    df['duration'].plot(kind='hist', bins=30)
-    plt.title('Distribution de la durée des interactions')
+    df['duration'].plot(kind='hist', bins=30, color='mediumseagreen')
+    plt.yscale('log')
+    plt.title('Distribution de la durée des interactions (échelle logarithmique)')
     plt.xlabel('Durée (s)')
     plt.ylabel('Fréquence')
+    plt.tight_layout()
     plt.savefig('static/duration_histogram.png')
     plt.close()
 
