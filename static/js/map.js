@@ -84,9 +84,9 @@ function dessinerPoints(data, elapsedTime) {
     }
 
     //console.log("Dessin des points sur le canvas...");
-    data.forEach(item => {
+    if(data && Array.isArray(data) && data.length > 0){
+        data.forEach(item => {
         const timeCodeDebut = item.Time_code_debut;
-
         item.data.forEach(trajectory => {
             let color = "black"; // Default color
             if (trajectory.Usager === "car") {
@@ -111,6 +111,7 @@ function dessinerPoints(data, elapsedTime) {
             });
         });
     });
+}
 }
 
 // Appeler la fonction init_data pour démarrer le processus
