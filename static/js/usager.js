@@ -291,11 +291,10 @@ function filterAndRenderInteractions(userType, interactionType, data_minute_sec)
       time = parseInt(data_minute_sec["minutes"]) * 60 + parseInt(data_minute_sec["seconds"]) + hour * 3600;
       timecode = interactionToUpdate.Time_code_debut.split(":");
       console.log(timecode);
-
       start_time_update = parseInt(timecode[0]) * 3600 + parseInt(timecode[1]) * 60 + parseInt(timecode[2]) - time;
+      
       timecode = interactionToUpdate.Time_code_fin.split(":");
       stop_time_update = parseInt(timecode[0]) * 3600 + parseInt(timecode[1]) * 60 + parseInt(timecode[2]) - time;
-     
       console.log("start_time_update", start_time_update);
       console.log("stop_time_update", stop_time_update);
       const day_hour = document.getElementById("day_hour");
@@ -395,18 +394,20 @@ function filterAndRenderInteractions(userType, interactionType, data_minute_sec)
   
       start_time_update = parseInt(timecode[0]) * 3600 + parseInt(timecode[1]) * 60 + parseInt(timecode[2]) - time;
       timecode = data["end_time"].split(":");
+
       stop_time_update = parseInt(timecode[0]) * 3600 + parseInt(timecode[1]) * 60 + parseInt(timecode[2]) - time;
        
       const numvideo = document.getElementById("num_video");
       var num_video = parseInt(numvideo.textContent)// Ajoute un zéro devant si nécessaire et prend les deux derniers chiffres
       
-  
+      console.log("start_time_update", start_time_update);
+      console.log("stop_time_update", stop_time_update);  
        $.ajax({
         url: "/create_interaction", // Remplacez '/your-endpoint-url' par l'URL de votre endpoint
         method: "GET",
         data: {
-          start_time: start_time_update,
-          end_time: stop_time_update,
+          start_time: start_time_update*1000,
+          end_time: stop_time_update*1000,
           interaction: data["interaction"],
           selected_values: data["selectedValues"],
           commentaire: data["commentaire"],
