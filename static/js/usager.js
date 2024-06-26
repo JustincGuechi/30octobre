@@ -484,6 +484,7 @@ function filterAndRenderInteractions(userType, interactionType, userData, intera
   // Si vous avez besoin d'ajouter d'autres fonctionnalités JavaScript, ajoutez-les ici.
   // Fonction pour charger la vidéo et les données JSON
   async function chargerVideoEtDonnees(camera, dayHour) {
+    loading_wait();
     selectedCamera = camera;
     const videoUrl1 = `/video1?camera=${camera}&dayHour=${dayHour}`;
     const videoUrl2 = `/video2?camera=${camera}&dayHour=${dayHour}`;
@@ -503,9 +504,11 @@ function filterAndRenderInteractions(userType, interactionType, userData, intera
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
+        loaded_wait();
         return await response.json();
       } catch (error) {
         console.error("Erreur lors du chargement des données JSON :", error);
+        loaded_wait();
       }
     }
 
