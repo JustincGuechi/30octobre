@@ -20,9 +20,10 @@ $(document).ready(function () {
   
 
   function afficherUsagers(userData, data_minute_sec) {
-
+    $('#userTypeSelect').empty();
     // Création des options du menu déroulant pour les utilisateurs
     var utilisateurs = {};
+    $('#userTypeSelect').append('<option value="">Toutes les interactions</option>');
     userData.forEach(function (obj) {
       if (!utilisateurs[obj.Usager]) {
         utilisateurs[obj.Usager] = true;
@@ -86,7 +87,6 @@ async function affichage_interaction_avec_data(response,userData, data_minute_se
 
   // Fonction pour filtrer les interactions en fonction des utilisateurs et des interactions sélectionnés
 function filterAndRenderInteractions(userType, interactionType, userData, interactionData, data_minute_sec) {
-
     // Étape 1 : Filtrer les usagers pour obtenir les ID2
     var filteredID2s = userData
         .filter(function (obj) {
@@ -555,7 +555,7 @@ function filterAndRenderInteractions(userType, interactionType, userData, intera
 
       loading();
 
-      const url_usager2 = `/get_usagers1?camera=${camera}&dayHour=${dayHour}`;
+      const url_usager2 = `/get_usagers2?camera=${camera}&dayHour=${dayHour}`;
       const data_usager2 = await chargerDonneesJson(url_usager2);
 
       if (data_usager2) {
