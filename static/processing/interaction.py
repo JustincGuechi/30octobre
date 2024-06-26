@@ -10,8 +10,6 @@ def found_interaction(list_user, list_zone, authorised_zone):
     interactions = []
     print("Recherche des interactions de position...")
     for user in tqdm.tqdm(list_user):
-        if 'ID2' not in user:
-            user["ID2"] = str(uuid.uuid4())
 
         for zone, area in list_zone:
             if len(area[0]) == 2:
@@ -47,7 +45,7 @@ def found_interaction(list_user, list_zone, authorised_zone):
                                     interaction_type = determine_interaction_type(duration)
                                     interactions.append({
                                         "user": user['Usager'],
-                                        "id_interaction": str(user['ID']) + user['ID2'],
+                                        "id_interaction":str(uuid.uuid4()),
                                         "id": [user['ID2']],
                                         "interaction": interaction_type,
                                         "zone": zone,
@@ -65,7 +63,7 @@ def found_interaction(list_user, list_zone, authorised_zone):
                                 interaction_type = determine_interaction_type(duration)
                                 interactions.append({
                                     "user": user['Usager'],
-                                    "id_interaction": str(user['ID']) + user['ID2'],
+                                    "id_interaction": str(uuid.uuid4()),
                                     "id": [user['ID2']],
                                     "interaction": interaction_type,
                                     "zone": zone,
@@ -100,11 +98,11 @@ def found_interaction(list_user, list_zone, authorised_zone):
     return interactions
 
 def determine_interaction_type(duration):
-    if duration < 150:
+    if duration < 1500:
         return "Faut positif"
-    elif duration < 300:
+    elif duration < 3000:
         return "Franchissement de ligne cours"
-    elif duration < 1000:
+    elif duration < 10000:
         return "Franchissement de ligne long"
     else:
         return "Autre"

@@ -34,7 +34,7 @@ aperture = 2.35      # Ouverture
 angle_diagonal = 16  # Angle de vue diagonal en degrés
 
 # Charger la vidéo
-video_path = 'static\\video\\C4_Strasbourg_2024_02_13_08_00.webm'
+video_path = 'static\\video\\C1_Thiers_2024_02_13_13_22_04.mp4'
 plan_path = 'static\\plan.png'
 cap = cv2.VideoCapture(video_path)
 plan = cv2.imread(plan_path)
