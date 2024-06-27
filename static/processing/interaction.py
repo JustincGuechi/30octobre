@@ -116,7 +116,7 @@ def process_interactions(chemin_user, chemin_zone):
     with open(chemin_zone) as fichier:
         zone = json.load(fichier)
 
-    personn = ["road", "cycle_path", "bus", "bus_road_Carnot"]
+    personn = ["road", "cycle_path", "bus"]
     car = motocycle = ["cycle_path", "bus", "sidewalk"]
     bicyle = ["bus", "sidewalk"]
     bus = ["cycle_path", "sidewalk"]
