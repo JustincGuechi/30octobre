@@ -23,7 +23,7 @@ $(document).ready(function () {
     $('#userTypeSelect').empty();
     // Création des options du menu déroulant pour les utilisateurs
     var utilisateurs = {};
-    $('#userTypeSelect').append('<option value="">Toutes les interactions</option>');
+    $('#userTypeSelect').append('<option value="">Tous les utilisateurs</option>');
     userData.forEach(function (obj) {
       if (!utilisateurs[obj.Usager]) {
         utilisateurs[obj.Usager] = true;
